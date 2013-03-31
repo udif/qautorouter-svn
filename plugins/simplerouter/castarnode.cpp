@@ -52,6 +52,23 @@ CAStarNode::~CAStarNode()
 	clear();
 }
 
+/// @return the path to the goal as a list of CAStarNodes, or an empty list if no path was possible.
+QList<CAStarNode*>	CAStarNode::path()
+{
+	QList<CAStarNode*> rc;
+	clear();
+	if ( seek() && !mChildren.isEmpty() )
+	{
+		CAStarNode* child = mChildren.first();
+		while( child )
+		{
+			rc.append(child);
+			child = child->children().isEmpty() ? NULL : child->children().first();
+		}
+	}
+	return rc;
+}
+
 /// Seek a path to the goal.
 /// @return true if we found a path.
 bool CAStarNode::seek()

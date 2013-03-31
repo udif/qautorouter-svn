@@ -13,10 +13,8 @@ unix {
 	INSTALLS += target
 }
 SOURCES += simplerouter.cpp \
-    castarpath.cpp \
     castarnode.cpp
 HEADERS += simplerouter.h \
-    castarpath.h \
     castarnode.h
 OTHER_FILES += README.txt
 unix: LIBS += -L../../specctra -lspecctra

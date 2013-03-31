@@ -15,7 +15,6 @@
 #include <cgwire.h>
 
 #include "castarnode.h"
-#include "castarpath.h"
 
 /**
   * @return plugin type
@@ -209,12 +208,24 @@ void SimpleRouter::route()
 		selectNet(net,true);
 		for( int n=0; running() && n < wire.segments(); n++)
 		{
+			/// FIXME Calculate grid resolution and positional offset here
+			/// A* is operating in terms of a theoretical grid of arbitrary
+			/// resolution. We should calculate the grid rez based on the width
+			/// of the current wire combined with the rules governing clearance
+			/// such that the grid is of sufficient resolution to allow A* to
+			/// to bring the wire to it's tightest tolerance.
 			CGSegment* segment = wire.segment(n);
-			//CAStarPath astar;
-			//CAStarNode start(segment.x(),segment.y());
-			//CAStarNode goal(/** FIXME - goal locator here */);
-			//CAStarPath::tNodeList path = astar.seek(start, goal, mapArray);
-			// FIXME - route wire segment along path nodes
+			CAStarNode node(segment->pos(),NULL);					// FIXME - uses grid coordinates
+			CAStarNode::setGoal(wire.pos());						// FIXME - uses grid coordinates
+			CAStarNode::setStart(segment->pos());					// FIXME - uses grid coordinates
+			CAStarNode::setBounds(pcb()->boundingRect());			// FIXME - uses grid coordinates
+			QList<CAStarNode*> path = node.path();
+			// FIXME - make a CGWire follow the A* nodes...
+			for(int n=0; n < path.count(); n++)
+			{
+				CAStarNode* node = path[n];
+				printf( "node[%d,%d]\n",node->pos().x(),node->pos().y());
+			}
 			emit status(currentStatus());
 		}
 		selectNet(net,false);

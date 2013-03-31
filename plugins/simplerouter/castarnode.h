@@ -49,7 +49,7 @@ class CAStarNode
 
 		int					cost()							{return g() + h();}
 
-		bool				seek();
+		QList<CAStarNode*>	path();
 
 	protected:
 
@@ -64,6 +64,7 @@ class CAStarNode
 
 	private:
 
+		bool				seek();
 		void				instantiateNeighbors();
 		void				insort(CAStarNode* child);
 		bool				isTraversable(QPoint& pt);
