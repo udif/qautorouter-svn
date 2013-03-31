@@ -24,6 +24,8 @@ class CGVia : public CGPadstack
 		virtual tSegment			segmentType() {return CGSegment::Via;}
 		virtual bool				isA(CGSegment::tSegment t) {return t==CGSegment::Via || CGPadstack::isA(t);}
 
+		virtual void				route();
+
 	private:
 
 };

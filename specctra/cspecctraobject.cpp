@@ -128,7 +128,7 @@ CSpecctraObject::tDrawableClass CSpecctraObject::drawableClass()
 void CSpecctraObject::setClassOpacity(tDrawableClass dClass,double opacity)
 {
 	if ( opacity > 1.0 ) opacity=1.0;
-	if ( opacity < 0.0 ) opacity-0.0;
+	if ( opacity < 0.0 ) opacity=0.0;
 	if ( drawableClass() == dClass )
 	{
 		this->setOpacity(opacity);
@@ -188,45 +188,45 @@ QString CSpecctraObject::toText(int lvl)
   */
 QString CSpecctraObject::toGeda(int lvl)
 {
-    QString fill;
-    QString text;
-    QList<CSpecctraObject*> gedaChildList = gedaChildren();
-    fill.fill(' ',lvl*2);
-    if ( gedaObjectClass().length() )
-    {
-        text += fill;
-        text += "["+gedaObjectClass()+" "+gedaProperties().join(" ")+"]\n";
-        if ( gedaChildList.count() )
-        {
-            text += fill;
-            text += "(\n";
-            for(int n=0;n<gedaChildList.count();n++)
-            {
-                CSpecctraObject* child = gedaChildList.at(n);
-                text += child->toGeda(lvl+1);
-            }
-            text += fill;
-            text += ")\n";
-        }
-        else
-        if ( gedaChildList.count() )
-        {
-            for(int n=0;n<gedaChildList.count();n++)
-            {
-                CSpecctraObject* child = gedaChildList.at(n);
-                text += child->toGeda(lvl);
-            }
-        }
-    }
-    else
-    {
-        for(int n=0;n<gedaChildList.count();n++)
-        {
-            CSpecctraObject* child = gedaChildList.at(n);
-            text += child->toGeda(lvl);
-        }
-    }
-    return text;
+	QString fill;
+	QString text;
+	QList<CSpecctraObject*> gedaChildList = gedaChildren();
+	fill.fill(' ',lvl*2);
+	if ( gedaObjectClass().length() )
+	{
+		text += fill;
+		text += "["+gedaObjectClass()+" "+gedaProperties().join(" ")+"]\n";
+		if ( gedaChildList.count() )
+		{
+			text += fill;
+			text += "(\n";
+			for(int n=0;n<gedaChildList.count();n++)
+			{
+				CSpecctraObject* child = gedaChildList.at(n);
+				text += child->toGeda(lvl+1);
+			}
+			text += fill;
+			text += ")\n";
+		}
+		else
+		if ( gedaChildList.count() )
+		{
+			for(int n=0;n<gedaChildList.count();n++)
+			{
+				CSpecctraObject* child = gedaChildList.at(n);
+				text += child->toGeda(lvl);
+			}
+		}
+	}
+	else
+	{
+		for(int n=0;n<gedaChildList.count();n++)
+		{
+			CSpecctraObject* child = gedaChildList.at(n);
+			text += child->toGeda(lvl);
+		}
+	}
+	return text;
 
 }
 
@@ -236,7 +236,7 @@ QString CSpecctraObject::toGeda(int lvl)
   */
 QString CSpecctraObject::gedaObjectClass()
 {
-    return "";
+	return "";
 }
 
 /**
@@ -244,8 +244,8 @@ QString CSpecctraObject::gedaObjectClass()
   */
 QStringList CSpecctraObject::gedaProperties()
 {
-    QStringList rc;
-    return rc;
+	QStringList rc;
+	return rc;
 }
 
 /**
@@ -253,7 +253,7 @@ QStringList CSpecctraObject::gedaProperties()
   */
 QList<CSpecctraObject*>	CSpecctraObject::gedaChildren()
 {
-    return children();
+	return children();
 }
 
 
@@ -353,7 +353,7 @@ CSpecctraObject* CSpecctraObject::child(QString o,int idx)
 {
 	for(int n=0; n < children().count(); n++)
 	{
-        if ( children().at(n)->objectClass()==o)
+		if ( children().at(n)->objectClass()==o)
 		{
 			if ( idx == 0 )
 				return children().at(n);

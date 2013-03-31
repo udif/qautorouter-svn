@@ -13,7 +13,9 @@
 #include <cutil.h>
 #include <cgsegment.h>
 #include <cgwire.h>
-#include <boundingbox.h>
+
+#include "castarnode.h"
+#include "castarpath.h"
 
 /**
   * @return plugin type
@@ -174,7 +176,7 @@ void SimpleRouter::selectNet(CPcbNet *net, bool selected)
 }
 
 /**
-  * @brief select a net for routing.
+  * @brief Select nets for routing and push onto a stack.
   */
 void SimpleRouter::select()
 {
@@ -196,7 +198,7 @@ void SimpleRouter::select()
 }
 
 /**
-  * @brief route the current net.
+  * @brief Route a net.
   */
 void SimpleRouter::route()
 {
@@ -208,8 +210,11 @@ void SimpleRouter::route()
 		for( int n=0; running() && n < wire.segments(); n++)
 		{
 			CGSegment* segment = wire.segment(n);
-			BoundingBox box(pcb(),net,segment);
-			box.route();
+			//CAStarPath astar;
+			//CAStarNode start(segment.x(),segment.y());
+			//CAStarNode goal(/** FIXME - goal locator here */);
+			//CAStarPath::tNodeList path = astar.seek(start, goal, mapArray);
+			// FIXME - route wire segment along path nodes
 			emit status(currentStatus());
 		}
 		selectNet(net,false);
@@ -217,7 +222,7 @@ void SimpleRouter::route()
 }
 
 /**
-  * @brief run for a little bit.
+  * @brief Run for a little bit.
   */
 bool SimpleRouter::exec()
 {

@@ -105,7 +105,7 @@ QPainterPath CPcbPlane::shape() const
 	return ppath;
 }
 
-void CPcbPlane::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)
+void CPcbPlane::paint(QPainter* painter, const QStyleOptionGraphicsItem* /* option */, QWidget* /* widget */)
 {
 	if ( drawable() )
 	{

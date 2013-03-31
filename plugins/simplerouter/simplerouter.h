@@ -11,6 +11,7 @@
 #include <QList>
 #include <QRectF>
 #include <QStack>
+#include <QMap>
 #include <cplugininterface.h>
 
 class CPcb;
@@ -22,6 +23,7 @@ class SimpleRouter : public QObject, public CPluginInterface
 	Q_INTERFACES(CPluginInterface)
 
 	public:
+		friend class CSegmentState;
 
 		virtual tPluginType			type();							/* is the a router or post-router */
 
@@ -39,11 +41,31 @@ class SimpleRouter : public QObject, public CPluginInterface
 	signals:
 		void						status(QString txt);			/** emit a status text */
 	protected:
+
 		typedef enum {
 			Idle,													/** there is nothing happening */
 			Selecting,												/** selecting which net(s) to route */
 			Routing,												/** committing a route */
 		} tRunState;
+
+		static const double dirNone	=	-1.0;	// none
+		static const double dirN	=	0.0;	// North
+		static const double dirNNE	=	22.5;	// North North East
+		static const double dirNE	=	45.0;	// North East
+		static const double dirENE	=	67.5;	// East North East
+		static const double dirE	=	90;		// East
+		static const double dirESE	=	112.5;	// East South East
+		static const double dirSE	=	135;	// South East
+		static const double dirSSE	=	157.5;	// South South East
+		static const double dirS	=	180;	// South
+		static const double dirSSW	=	202.5;	// South South West
+		static const double dirSW	=	225;	// South West
+		static const double dirWSW	=	247.5;	// West South West
+		static const double dirW	=	270;	// West
+		static const double dirWNW	=	292.5;	// West North West
+		static const double dirNW	=	315;	// North West
+		static const double dirNNW	=	337.5;	// North North West
+
 		CPcb*						pcb() {return mPcb;}
 		tRunState					state();
 		bool						running() {return state() != Idle;}

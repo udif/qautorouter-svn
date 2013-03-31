@@ -13,6 +13,7 @@ BoundingBox::BoundingBox(CPcb* pcb, CPcbNet* net, CGSegment* segment, QObject* p
 }
 
 BoundingBox::BoundingBox(const BoundingBox& other)
+: QObject()
 {
 	copy(other);
 }
@@ -40,7 +41,6 @@ BoundingBox& BoundingBox::copy(const BoundingBox& other)
   */
 QRectF BoundingBox::grow()
 {
-	QRectF previousRect = rect();
 	QRectF r = rect();
 	double amount = segment()->width();
 	r.setX(r.x()-amount);
@@ -61,14 +61,20 @@ QRectF BoundingBox::grow()
   */
 void BoundingBox::route(CPcbNet* net, CGSegment* segment)
 {
-	segment->setWidth(20);
-	segment->setRouted(true);
+	// segment->setWidth(20);
 	segment->update();
 	pcb()->yield();				/* give up some CPU  */
+	// drill down to the leafiest child...
 	for(int n=0; n < segment->segments(); n++)
 	{
 		CGSegment* child = segment->segment(n);
 		route(net,child);
+	}
+	// routed?
+	if ( !segment->routed() )
+	{
+		//segment->route();
+		segment->setRouted(true);
 	}
 }
 

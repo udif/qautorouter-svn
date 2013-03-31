@@ -15,11 +15,11 @@
 
 CGSegment::CGSegment(CPcbNet* net)
 : inherited(NULL)
+, mNet(net)
 , mWidth(0.0)
 , mLayer(NULL)
 , mParentSegment(NULL)
 , mRouted(false)
-, mNet(net)
 {
 	CSpecctraObject::globalScene()->addItem(this);
 }
@@ -174,4 +174,11 @@ void CGSegment::paint(QPainter *painter, const QStyleOptionGraphicsItem* /* opti
 		painter->setPen(QPen(QColor(255,255,0), w<=0?10:width(), Qt::SolidLine,Qt::FlatCap,Qt::MiterJoin));
 	}
 	painter->drawPath(shape());
+}
+
+/**
+ * @brief Route the segment.
+ */
+void CGSegment::route()
+{
 }

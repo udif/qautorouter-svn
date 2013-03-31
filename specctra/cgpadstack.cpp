@@ -12,7 +12,7 @@ QMap<QString,CGPadstack*>	CGPadstack::mGPadstacks; /** indexed by "UNIT-PIN" str
 
 #define inherited CGSegment
 
-CGPadstack::CGPadstack(CPcbNet* net,CPcbPlace* place,QString pinRef, QObject *parent)
+CGPadstack::CGPadstack(CPcbNet* net,CPcbPlace* place,QString pinRef, QObject* /* parent */)
 : inherited(net)
 , mPlace(place)
 , mPinRef(pinRef)
@@ -132,9 +132,9 @@ QStringList CGPadstack::layers()
   */
 QPainterPath CGPadstack::shape() const
 {
-	CGPadstack* me = (CGPadstack*)this;
 	QPainterPath ppath;
 #if 0
+	CGPadstack* me = (CGPadstack*)this;
 	for(int n=0; n < me->layers().count(); n++)
 	{
 		CGPad* pPad = me->pad(me->layers().at(n));

@@ -13,9 +13,11 @@ unix {
 	INSTALLS += target
 }
 SOURCES += simplerouter.cpp \
-    boundingbox.cpp
+    castarpath.cpp \
+    castarnode.cpp
 HEADERS += simplerouter.h \
-    boundingbox.h
+    castarpath.h \
+    castarnode.h
 OTHER_FILES += README.txt
 unix: LIBS += -L../../specctra -lspecctra
 win32: LIBS += -L../../../qautorouter-build-desktop/specctra/release -L../../../qautorouter-build-desktop/specctra/debug -lspecctra

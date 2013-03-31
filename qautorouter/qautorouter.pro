@@ -4,36 +4,36 @@
 QT += gui
 CONFIG += debug
 # QMAKE_LFLAGS += -rdynamic
-unix { 
-    QMAKE_LFLAGS += -rdynamic \
-        -pg
-    QMAKE_CXXFLAGS_DEBUG += -pg
-    QMAKE_LFLAGS_DEBUG += -pg
-}
+#unix {
+#    QMAKE_LFLAGS += -rdynamic \
+#        -pg
+#    QMAKE_CXXFLAGS_DEBUG += -pg
+#    QMAKE_LFLAGS_DEBUG += -pg
+#}
 INCLUDEPATH += include \
-    ../specctra/include
+	../specctra/include
 TARGET = qa
 TEMPLATE = app
-unix { 
-    target.path = /usr/bin
-    INSTALLS += target
+unix {
+	target.path = /usr/bin
+	INSTALLS += target
 }
 SOURCES += main.cpp \
-    cspecctrareader.cpp \
-    qautorouter.cpp \
-    qautorouter-plugins.cpp \
-    qautorouter-actions.cpp \
-    qautorouter-settings.cpp \
-    qautorouter-file.cpp
+	cspecctrareader.cpp \
+	qautorouter.cpp \
+	qautorouter-plugins.cpp \
+	qautorouter-actions.cpp \
+	qautorouter-settings.cpp \
+	qautorouter-file.cpp
 HEADERS += include/qautorouter.h \
-    include/cspecctrareader.h \
-    include/qautorouter-common.h
+	include/cspecctrareader.h \
+	include/qautorouter-common.h
 FORMS += forms/qautorouter.ui \
-    forms/preferences.ui \
-    forms/layerpreferences.ui
+	forms/preferences.ui \
+	forms/layerpreferences.ui
 RESOURCES += qautorouter.qrc
 unix:LIBS += -L../specctra \
-    -lspecctra
+	-lspecctra
 win32:LIBS += -L../../qautorouter-build-desktop/specctra/release \
-    -L../../qautorouter-build-desktop/specctra/debug \
-    -lspecctra
+	-L../../qautorouter-build-desktop/specctra/debug \
+	-lspecctra

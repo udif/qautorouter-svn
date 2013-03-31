@@ -57,7 +57,7 @@ QRectF CPcbSegment::boundingRect() const
 	return rect;
 }
 
-void CPcbSegment::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)
+void CPcbSegment::paint(QPainter* painter, const QStyleOptionGraphicsItem* /* option */, QWidget* /* widget */)
 {
 	if ( drawable() )
 	{

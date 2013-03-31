@@ -59,7 +59,9 @@ class CGSegment : public QObject, public QGraphicsItem
 		virtual bool				selected();
 
 		void						setRouted(bool routed) {mRouted=routed;}
-		virtual bool				routed() {return isStatic()?true:mRouted;}
+		virtual bool				routed()	{return isStatic()?true:mRouted;}
+		virtual	bool				routable()	{return isA(Wire) || isA(Via);}
+		virtual	void				route();
 
 	public slots:
 		virtual void				clear();

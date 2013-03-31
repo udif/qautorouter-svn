@@ -97,7 +97,7 @@ QPainterPath CPcbVia::shape() const
 	return ppath;
 }
 
-void CPcbVia::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)
+void CPcbVia::paint(QPainter* painter, const QStyleOptionGraphicsItem* /* option */, QWidget* /* widget */)
 {
 	if ( drawable() )
 	{

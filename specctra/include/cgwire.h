@@ -28,6 +28,8 @@ class CGWire : public CGSegment
 		virtual bool				insertBreak(QPointF pt,CGSegment::tSegment style);
 
 		virtual QPainterPath		shape() const;
+
+		virtual void				route();
 };
 
 #endif // CGWIRE_H

@@ -40,7 +40,7 @@ QPainterPath CGWire::shape() const
 /**
   * @brief break the wire into another segment at point
   */
-bool CGWire::insertBreak(QPointF pt,CGSegment::tSegment style)
+bool CGWire::insertBreak(QPointF /* pt */,CGSegment::tSegment style)
 {
 	bool rc=false;
 	CGSegment* seg=NULL;
@@ -69,4 +69,11 @@ bool CGWire::insertBreak(QPointF pt,CGSegment::tSegment style)
 		append(seg);
 	}
 	return rc;
+}
+
+/**
+ * @brief route the wire
+ */
+void CGWire::route()
+{
 }

@@ -367,7 +367,7 @@ QPainterPath CPcbNet::shape() const
 #endif
 }
 
-void CPcbNet::paint(QPainter *painter, const QStyleOptionGraphicsItem* /* option */, QWidget* /* widget */)
+void CPcbNet::paint(QPainter* /* painter */, const QStyleOptionGraphicsItem* /* option */, QWidget* /* widget */)
 {
 	QPainterPath p = shape();
 #if 0

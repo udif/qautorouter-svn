@@ -15,3 +15,6 @@ CGVia::~CGVia()
 {
 }
 
+void CGVia::route()
+{
+}
