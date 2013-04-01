@@ -4,6 +4,7 @@
 *******************************************************************************/
 #include "castarnode.h"
 #include <math.h>
+#include <stdio.h>
 
 QRectF			CAStarNode::mBounds;
 QPointF			CAStarNode::mStart;
@@ -80,12 +81,17 @@ bool CAStarNode::seek()
 	bool found = (goalRect().contains(pos()));
 	if ( !found )
 	{
-		instantiateNeighbors();
-		close();				// this node has been explored.
+        close();
+        instantiateNeighbors();
 		while(!mChildren.isEmpty())
 		{
 			CAStarNode* child = mChildren.first();
-			if ( !(found = child->seek()) )
+            printf("this[%g,%g] child[%g,%g] start[%g,%g] goal[%g,%g]\n",
+                   pos().x(), pos().y(),
+                   child->pos().x(), child->pos().y(),
+                   mStart.x(), mStart.y(),
+                   mGoalPt.x(), mGoalPt.y() );
+            if ( !(found = child->seek()) )
 			{
 				// at this point child has been fully explored with no solution.
 				mChildren.takeFirst();
@@ -100,8 +106,8 @@ bool CAStarNode::seek()
 /// @param pt a point in scene coordinates.
 QRectF CAStarNode::gridRect(QPointF pt)
 {
-	double gridX = (int)(pt.x() / gridRez());
-	double gridY = (int)(pt.y() / gridRez());
+    double gridX = pt.x() - (gridRez()/2.0);
+    double gridY = pt.y() - (gridRez()/2.0);
 	QRectF rc( gridX, gridY, gridRez(), gridRez() );
 	return rc;
 }
@@ -113,25 +119,59 @@ void CAStarNode::setGoal(QPointF pt)
 	mGoalRect	= gridRect(pt);
 }
 
+/// Determine if this, or any already instantiated children of this
+/// contain this point.
+/// @param pt the point to seek
+/// @param gnore ignor probing this node if not NULL
+///
+/// FIXME - this can (and must) be much further optimized
+///
+bool CAStarNode::contains(QPointF& pt, CAStarNode *ignore)
+{
+    bool rc = false;
+    if ( this != ignore )
+    {
+        if ( !(rc = gridRect( pos() ).contains( pt )) )
+        {
+            for( int n=0; !rc && n < mChildren.count(); n++ )
+            {
+                CAStarNode* child = mChildren[n];
+                rc = child->contains(pt,ignore);
+            }
+        }
+    }
+    return rc;
+}
+
+/// Instantiate a single neigbor node...
+CAStarNode* CAStarNode::instantiateNeighbor(int x, int y)
+{
+    QPointF pt;
+    pt.setX( pos().x() + (x*gridRez()) );
+    pt.setY( pos().y() + (y*gridRez()) );
+    if ( isTraversable(pt) )
+    {
+        if ( parent()==NULL || (!parent()->contains( pt, this )) )
+        {
+            CAStarNode* child = new CAStarNode(pt,this);
+            Q_ASSERT( child != NULL );
+            insort(child);
+            return child;
+        }
+    }
+    return NULL;
+}
 
 /// The initial neigbor instantiation, these become owned by this as children.
 void CAStarNode::instantiateNeighbors()
 {
 	if ( mChildren.isEmpty() )
 	{
-		QPointF pt;
 		for(int x=-1; x<=1; x++)
 		{
 			for(int y=-1; y<=1; y++)
 			{
-				pt.setX(x*gridRez());
-				pt.setY(y*gridRez());
-				if ( isTraversable(pt) )
-				{
-					CAStarNode* child = new CAStarNode(pt,this);
-					Q_ASSERT( child != NULL );
-					insort(child);
-				}
+                instantiateNeighbor(x,y);
 			}
 		}
 	}
@@ -179,7 +219,7 @@ double CAStarNode::adjacentCost(QPointF &a, QPointF &b)
 {
 	double diffX = fabs(a.x()-b.x());
 	double diffY = fabs(a.y()-b.y());
-	double rc = ( diffX && diffY ) ? (10*1.414) : 10.0;
+    double rc = ( diffX && diffY ) ? (10.0*1.414) : 10.0;
 	return rc;
 }
 

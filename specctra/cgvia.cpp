@@ -9,6 +9,7 @@
 CGVia::CGVia(CPcbNet* net)
 : inherited(net,NULL,QString(),NULL)
 {
+    mSegmentType=CGSegment::Via;
 }
 
 CGVia::~CGVia()

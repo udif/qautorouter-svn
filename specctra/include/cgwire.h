@@ -22,10 +22,7 @@ class CGWire : public CGSegment
 
 		virtual CPcbNet*			net();
 
-		virtual tSegment			segmentType() {return CGSegment::Wire;}
-		virtual bool				isA(CGSegment::tSegment t) {return t==CGSegment::Wire || CGSegment::isA(t);}
-
-		virtual bool				insertBreak(QPointF pt,CGSegment::tSegment style);
+        virtual bool				insertBreak(QPointF pt,CGSegment::tSegmentType style);
 
 		virtual QPainterPath		shape() const;
 

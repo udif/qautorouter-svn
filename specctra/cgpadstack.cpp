@@ -17,7 +17,7 @@ CGPadstack::CGPadstack(CPcbNet* net,CPcbPlace* place,QString pinRef, QObject* /*
 , mPlace(place)
 , mPinRef(pinRef)
 {
-
+    mSegmentType=CGSegment::Padstack;
 	mGPadstacks.insert(unitRef(),this);
 }
 
@@ -107,9 +107,10 @@ CGPad* CGPadstack::pad(QString layer)
 QPointF CGPadstack::origin()
 {
 	QPointF pt;
-	for(int n=0; n < layers().count(); n++)
+    QStringList layers = this->layers();
+    for(int n=0; n < layers.count(); n++)
 	{
-		CGPad* pPad = pad(layers().at(n));
+        CGPad* pPad = pad(layers.at(n));
 		pt = pPad->pos();
 	}
 	return pt;

@@ -15,6 +15,7 @@
 
 CGSegment::CGSegment(CPcbNet* net)
 : inherited(NULL)
+, mSegmentType(Segment)
 , mNet(net)
 , mWidth(0.0)
 , mLayer(NULL)

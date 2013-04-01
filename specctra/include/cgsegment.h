@@ -23,13 +23,13 @@ class CGSegment : public QObject, public QGraphicsItem
 			Padstack,
 			Wire,
 			Via
-		} tSegment;
+        } tSegmentType;
 
 		CGSegment(CPcbNet* net);
 		virtual ~CGSegment();
 
-		virtual tSegment			segmentType() {return CGSegment::Segment;}
-		virtual bool				isA(CGSegment::tSegment t) {return t==CGSegment::Segment;}
+        virtual tSegmentType		segmentType() {return mSegmentType;}
+        virtual bool				isA(CGSegment::tSegmentType t) {return t==mSegmentType || t==CGSegment::Segment;}
 		virtual bool				isStatic();
 
 		virtual void				setWidth(double w);
@@ -68,6 +68,7 @@ class CGSegment : public QObject, public QGraphicsItem
 
 	protected:
 		QList<CGSegment*>&			segmentsRef() {return mSegments;}
+        tSegmentType                mSegmentType;
 		CPcbNet*					mNet;
 
 	private:
