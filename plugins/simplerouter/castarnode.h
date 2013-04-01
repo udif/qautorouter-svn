@@ -46,8 +46,9 @@ class CAStarNode
 
 		void					clear();
 
-		CAStarNode*				parent()						{return mParent;}
-		QList<CAStarNode*>&		children()						{return mChildren;}
+        CAStarNode*				root();
+        CAStarNode*				parent()						{return mParent;}
+        QList<CAStarNode*>&		children()						{return mChildren;}
 
 		double					cost()							{return g() + h();}
 

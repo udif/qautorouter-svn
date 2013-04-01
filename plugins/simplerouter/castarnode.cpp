@@ -57,6 +57,16 @@ CAStarNode::~CAStarNode()
 	clear();
 }
 
+/// @return the root node
+CAStarNode* CAStarNode::root()
+{
+    CAStarNode* rc=this;
+    while( rc->parent() )
+        rc = rc->parent();
+    return rc;
+}
+
+
 /// @return the path to the goal as a list of CAStarNodes, or an empty list if no path was possible.
 QList<CAStarNode*>	CAStarNode::path()
 {
@@ -83,20 +93,21 @@ bool CAStarNode::seek()
 	{
         close();
         instantiateNeighbors();
-		while(!mChildren.isEmpty())
+        while(!mChildren.isEmpty() && !found)
 		{
 			CAStarNode* child = mChildren.first();
-            printf("this[%g,%g] child[%g,%g] start[%g,%g] goal[%g,%g]\n",
+            printf("this(%08X)[%g,%g] child[%g,%g] start[%g,%g] goal[%g,%g]\n",
+                   (quint64)this,
                    pos().x(), pos().y(),
                    child->pos().x(), child->pos().y(),
                    mStart.x(), mStart.y(),
                    mGoalPt.x(), mGoalPt.y() );
             if ( !(found = child->seek()) )
-			{
+            {
 				// at this point child has been fully explored with no solution.
-				mChildren.takeFirst();
-				delete child;
-			}
+                mChildren.takeFirst();
+                delete child;
+            }
 		}
 	}
 	return found;
@@ -119,8 +130,7 @@ void CAStarNode::setGoal(QPointF pt)
 	mGoalRect	= gridRect(pt);
 }
 
-/// Determine if this, or any already instantiated children of this
-/// contain this point.
+/// Determine if instantiated nodes contain this point.
 /// @param pt the point to seek
 /// @param gnore ignor probing this node if not NULL
 ///
@@ -133,6 +143,7 @@ bool CAStarNode::contains(QPointF& pt, CAStarNode *ignore)
     {
         if ( !(rc = gridRect( pos() ).contains( pt )) )
         {
+            /// look at my children...
             for( int n=0; !rc && n < mChildren.count(); n++ )
             {
                 CAStarNode* child = mChildren[n];
@@ -144,6 +155,7 @@ bool CAStarNode::contains(QPointF& pt, CAStarNode *ignore)
 }
 
 /// Instantiate a single neigbor node...
+/// FIXME - can we optimize this?
 CAStarNode* CAStarNode::instantiateNeighbor(int x, int y)
 {
     QPointF pt;
@@ -151,7 +163,9 @@ CAStarNode* CAStarNode::instantiateNeighbor(int x, int y)
     pt.setY( pos().y() + (y*gridRez()) );
     if ( isTraversable(pt) )
     {
-        if ( parent()==NULL || (!parent()->contains( pt, this )) )
+        /// examine the parents to see if somebody nearby
+        /// already has that node covered...
+        if (!root()->contains(pt,this))
         {
             CAStarNode* child = new CAStarNode(pt,this);
             Q_ASSERT( child != NULL );
