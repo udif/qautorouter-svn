@@ -119,11 +119,13 @@ void CAStarNode::instantiateNeighbors()
 {
 	if ( mChildren.isEmpty() )
 	{
-		QPoint pt;
-		for(pt.setX(-1); pt.x()<=1; pt.setX(pt.x()+1))
+		QPointF pt;
+		for(int x=-1; x<=1; x++)
 		{
-			for(pt.setY(-1); pt.y()<=1; pt.setY(pt.y()+1))
+			for(int y=-1; y<=1; y++)
 			{
+				pt.setX(x*gridRez());
+				pt.setY(y*gridRez());
 				if ( isTraversable(pt) )
 				{
 					CAStarNode* child = new CAStarNode(pt,this);
@@ -136,7 +138,7 @@ void CAStarNode::instantiateNeighbors()
 }
 
 /// Determine of the potential node would be traversable
-bool CAStarNode::isTraversable(QPoint &pt)
+bool CAStarNode::isTraversable(QPointF &pt)
 {
 	bool rc = false;
 	if ( bounds().contains(pt) )
@@ -165,7 +167,7 @@ void CAStarNode::insort(CAStarNode *child)
 /// of the vector from the origin to the point.
 double CAStarNode::manhattanLength(QPointF& a, QPointF& b)
 {
-	QPointF delta = b - a;
+	QPointF delta = (b - a);
 	return delta.manhattanLength();
 }
 

@@ -233,7 +233,7 @@ void SimpleRouter::route()
 			for(int n=0; n < path.count(); n++)
 			{
 				CAStarNode* node = path[n];
-				printf( "node[%d,%d]\n",node->pos().x(),node->pos().y());
+				printf( "node[%g,%g]\n",node->pos().x(),node->pos().y());
 			}
 			emit status(currentStatus());
 		}

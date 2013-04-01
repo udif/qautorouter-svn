@@ -75,7 +75,7 @@ class CAStarNode
 		static QRectF			gridRect(QPointF pt);
 		void					instantiateNeighbors();
 		void					insort(CAStarNode* child);
-		bool					isTraversable(QPoint& pt);
+		bool					isTraversable(QPointF& pt);
 		double					manhattanLength(QPointF& a, QPointF& b);
 		double					adjacentCost(QPointF& a, QPointF& b);
 
