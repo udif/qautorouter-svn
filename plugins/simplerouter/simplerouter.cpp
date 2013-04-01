@@ -208,17 +208,26 @@ void SimpleRouter::route()
 		selectNet(net,true);
 		for( int n=0; running() && n < wire.segments(); n++)
 		{
-			/// FIXME Calculate grid resolution and positional offset here
+			/// Calculate grid resolution and positional offset here
 			/// A* is operating in terms of a theoretical grid of arbitrary
 			/// resolution. We should calculate the grid rez based on the width
 			/// of the current wire combined with the rules governing clearance
 			/// such that the grid is of sufficient resolution to allow A* to
 			/// to bring the wire to it's tightest tolerance.
+
+			/// Over simplified grid settings, but should be sufficient for the initial testing...
+			/// Note that A* grid rect is 0,0 relative, where pcb rect could also be 0,0 relative,
+			/// but is probably not.
 			CGSegment* segment = wire.segment(n);
-			CAStarNode node(segment->pos(),NULL);					// FIXME - uses grid coordinates
-			CAStarNode::setGoal(wire.pos());						// FIXME - uses grid coordinates
-			CAStarNode::setStart(segment->pos());					// FIXME - uses grid coordinates
-			CAStarNode::setBounds(pcb()->boundingRect());			// FIXME - uses grid coordinates
+			double gridRez = wire.width();
+			CAStarNode::setScene(pcb()->scene());
+			CAStarNode::setBounds(pcb()->structure()->boundary()->boundingRect()); // FIXME - use boundary()->shape()
+			CAStarNode::setGridRez(gridRez);
+			CAStarNode::setGoal( wire.pos() );
+			CAStarNode::setStart( segment->pos() );
+
+			/// Begin seeking a path...
+			CAStarNode node(CAStarNode::start(),(CAStarNode*)NULL); // starting point
 			QList<CAStarNode*> path = node.path();
 			// FIXME - make a CGWire follow the A* nodes...
 			for(int n=0; n < path.count(); n++)

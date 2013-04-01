@@ -3,37 +3,41 @@
 * Author: Mike Sharkey <mike@pikeaero.com>                                     *
 *******************************************************************************/
 #include "castarnode.h"
+#include <math.h>
 
-QRect	CAStarNode::mBounds;
-QPoint	CAStarNode::mStart;
-QPoint	CAStarNode::mGoal;
+QRectF			CAStarNode::mBounds;
+QPointF			CAStarNode::mStart;
+QPointF			CAStarNode::mGoalPt;
+QRectF			CAStarNode::mGoalRect;
+QGraphicsScene*	CAStarNode::mScene=NULL;
+double			CAStarNode::mGridRez=1.0;
 
 CAStarNode::CAStarNode(CAStarNode* parent)
 : mParent(parent)
-, mCost(0)
+, mCost(0.0)
 , mOpen(true)
-, mG(0)
-, mH(0)
+, mG(0.0)
+, mH(0.0)
 {
 }
 
-CAStarNode::CAStarNode(QPoint pt, CAStarNode* parent)
+CAStarNode::CAStarNode(QPointF pt, CAStarNode* parent)
 : mParent(parent)
 , mPos(pt)
-, mCost(0)
+, mCost(0.0)
 , mOpen(true)
-, mG(0)
-, mH(0)
+, mG(0.0)
+, mH(0.0)
 {
 }
 
-CAStarNode::CAStarNode(QPoint pt, int cost, CAStarNode* parent)
+CAStarNode::CAStarNode(QPointF pt, double cost, CAStarNode* parent)
 : mParent(parent)
 , mPos(pt)
 , mCost(cost)
 , mOpen(true)
-, mG(0)
-, mH(0)
+, mG(0.0)
+, mH(0.0)
 {
 }
 
@@ -42,8 +46,8 @@ CAStarNode::CAStarNode(const CAStarNode& other)
 , mPos(other.mPos)
 , mCost(other.mCost)
 , mOpen(true)
-, mG(0)
-, mH(0)
+, mG(0.0)
+, mH(0.0)
 {
 }
 
@@ -73,7 +77,7 @@ QList<CAStarNode*>	CAStarNode::path()
 /// @return true if we found a path.
 bool CAStarNode::seek()
 {
-	bool found = (goal()==pos());
+	bool found = (goalRect().contains(pos()));
 	if ( !found )
 	{
 		instantiateNeighbors();
@@ -91,6 +95,24 @@ bool CAStarNode::seek()
 	}
 	return found;
 }
+
+/// Return the bounding (containing) rect in grid coordinates containing the point in sceen coordinates.
+/// @param pt a point in scene coordinates.
+QRectF CAStarNode::gridRect(QPointF pt)
+{
+	double gridX = (int)(pt.x() / gridRez());
+	double gridY = (int)(pt.y() / gridRez());
+	QRectF rc( gridX, gridY, gridRez(), gridRez() );
+	return rc;
+}
+
+/// Set the goal point and calculate the containg grid rect.
+void CAStarNode::setGoal(QPointF pt)
+{
+	mGoalPt		= pt;
+	mGoalRect	= gridRect(pt);
+}
+
 
 /// The initial neigbor instantiation, these become owned by this as children.
 void CAStarNode::instantiateNeighbors()
@@ -141,27 +163,27 @@ void CAStarNode::insort(CAStarNode *child)
 
 /// Returns the sum of the absolute values of x() and y(), traditionally known as the "Manhattan length"
 /// of the vector from the origin to the point.
-int CAStarNode::manhattanLength(QPoint& a, QPoint& b)
+double CAStarNode::manhattanLength(QPointF& a, QPointF& b)
 {
-	QPoint delta = b - a;
+	QPointF delta = b - a;
 	return delta.manhattanLength();
 }
 
 /// Calculate the cost between two adjacent points.
-/// We will assign a cost of 10 to each horizontal or vertical square moved, and a cost of 14 for a diagonal move.
-/// We use these numbers because the actual distance to move diagonally is the square root of 2 (don’t be scared),
-/// or roughly 1.414 times the cost of moving horizontally or vertically. We use 10 and 14 for simplicity’s sake.
-int CAStarNode::adjacentCost(QPoint &a, QPoint &b)
+/// We will assign a cost of 10 to each horizontal or vertical square moved, and a cost of 14.14 for a diagonal move.
+/// We use these numbers because the actual distance to move diagonally is the square root of 2,
+/// or roughly 1.414 times the cost of moving horizontally or vertically.
+double CAStarNode::adjacentCost(QPointF &a, QPointF &b)
 {
-	int diffX = abs(a.x()-b.x());
-	int diffY = abs(a.y()-b.y());
-	int rc = ( diffX && diffY ) ? 14 : 10;
+	double diffX = fabs(a.x()-b.x());
+	double diffY = fabs(a.y()-b.y());
+	double rc = ( diffX && diffY ) ? (10*1.414) : 10.0;
 	return rc;
 }
 
 /// Calculate G, the movement cost to move from the starting point A
 /// to a given square on the grid, following the path generated to get there.
-int CAStarNode::g()
+double CAStarNode::g()
 {
 	if ( !mG )
 	{
@@ -175,11 +197,11 @@ int CAStarNode::g()
 }
 
 /// @brief The estimated movement cost to move from that given square on the grid to the final destination
-int CAStarNode::h()
+double CAStarNode::h()
 {
 	if ( !mH )
 	{
-		mH = manhattanLength( mPos, mGoal ) * 10;
+		mH = manhattanLength( mPos, mGoalPt ) * 10.0;
 	}
 	return mH;
 }

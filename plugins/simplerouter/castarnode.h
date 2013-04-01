@@ -6,9 +6,11 @@
 #define _CASTARNODE_H
 
 #include <QObject>
-#include <QPoint>
-#include <QRect>
 #include <QList>
+#include <QGraphicsItem>
+#include <QGraphicsScene>
+#include <QPointF>
+#include <QRectF>
 
 class CAStarNode
 {
@@ -17,8 +19,8 @@ class CAStarNode
 	public:
 
 		CAStarNode(CAStarNode* parent=NULL);
-		CAStarNode(QPoint pt, CAStarNode* parent=NULL);
-		CAStarNode(QPoint pt, int cost, CAStarNode* parent=NULL);
+		CAStarNode(QPointF pt, CAStarNode* parent=NULL);
+		CAStarNode(QPointF pt, double cost, CAStarNode* parent=NULL);
 		CAStarNode(const CAStarNode& other);
 		~CAStarNode();
 
@@ -28,63 +30,73 @@ class CAStarNode
 		bool operator<(const CAStarNode& other) const;
 		bool operator>(const CAStarNode& other) const;
 
-		int					x()								{return mPos.x();}
-		int					y()								{return mPos.y();}
-		void				setX(int x)						{mPos.setX(x);}
-		void				setY(int y)						{mPos.setY(y);}
-		void				setPos(int x, int y)			{mPos.setX(x),mPos.setY(y);}
-		void				setPos(QPoint pos)				{mPos=pos;}
-		QPoint				pos()							{return mPos;}
+		double					x()								{return mPos.x();}
+		double					y()								{return mPos.y();}
+		void					setX(double x)					{mPos.setX(x);}
+		void					setY(double y)					{mPos.setY(y);}
+		void					setPos(double x, double y)		{mPos.setX(x),mPos.setY(y);}
+		void					setPos(QPointF pos)				{mPos=pos;}
+		QPointF					pos()							{return mPos;}
 
-		void				open()							{mOpen=true;}
-		void				close()							{mOpen=false;}
+		void					open()							{mOpen=true;}
+		void					close()							{mOpen=false;}
 
-		bool				isOpen()						{return mOpen;}
-		bool				isClosed()						{return !mOpen;}
+		bool					isOpen()						{return mOpen;}
+		bool					isClosed()						{return !mOpen;}
 
-		void				clear();
+		void					clear();
 
-		CAStarNode*			parent()						{return mParent;}
-		QList<CAStarNode*>&	children()						{return mChildren;}
+		CAStarNode*				parent()						{return mParent;}
+		QList<CAStarNode*>&		children()						{return mChildren;}
 
-		int					cost()							{return g() + h();}
+		double					cost()							{return g() + h();}
 
-		QList<CAStarNode*>	path();
+		QList<CAStarNode*>		path();
 
-	protected:
+		static void				setBounds(QRectF r)				{mBounds=r;}
+		static QRectF&			bounds()						{return mBounds;}
 
-		static void			setBounds(QRect r)				{mBounds=r;}
-		static QRect&		bounds()						{return mBounds;}
+		static void				setStart(QPointF pt)			{mStart=pt;}
+		static QPointF&			start()							{return mStart;}
 
-		static void			setStart(QPoint pt)				{mStart=pt;}
-		static QPoint&		start()							{return mStart;}
+		static void				setGoal(QPointF pt);
+		static QPointF&			goal()							{return mGoalPt;}
+		static QRectF&			goalRect()						{return mGoalRect;}
 
-		static void			setGoal(QPoint pt)				{mGoal=pt;}
-		static QPoint&		goal()							{return mGoal;}
+		static void				setScene(QGraphicsScene* scene)	{mScene=scene;}
+		static QGraphicsScene*	scene()							{return mScene;}
+
+		static void				setGridRez(double rez)			{mGridRez = rez;}
+		static double			gridRez()						{return mGridRez;}
 
 	private:
 
-		bool				seek();
-		void				instantiateNeighbors();
-		void				insort(CAStarNode* child);
-		bool				isTraversable(QPoint& pt);
-		int					manhattanLength(QPoint& a, QPoint& b);
-		int					adjacentCost(QPoint& a, QPoint& b);
+		bool					seek();
+		static QRectF			gridRect(QPointF pt);
+		void					instantiateNeighbors();
+		void					insort(CAStarNode* child);
+		bool					isTraversable(QPoint& pt);
+		double					manhattanLength(QPointF& a, QPointF& b);
+		double					adjacentCost(QPointF& a, QPointF& b);
 
-		int					g();
-		int					h();
+		double					g();
+		double					h();
 
-		static QRect		mBounds;
-		static QPoint		mStart;
-		static QPoint		mGoal;
+		static QRectF			mBounds;
+		static QPointF			mStart;
+		static QPointF			mGoalPt;
+		static QRectF			mGoalRect;
+		static QGraphicsScene*	mScene;
+		static double			mGridRez;
 
-		CAStarNode*			mParent;
-		QPoint				mPos;
-		int					mCost;
-		bool				mOpen;
-		QList<CAStarNode*>	mChildren;
-		int					mG;
-		int					mH;
+
+		CAStarNode*				mParent;
+		QPointF					mPos;
+		double					mCost;
+		bool					mOpen;
+		QList<CAStarNode*>		mChildren;
+		double					mG;
+		double					mH;
 };
 
 
