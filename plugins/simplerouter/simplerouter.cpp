@@ -219,7 +219,7 @@ void SimpleRouter::route()
 			/// Note that A* grid rect is 0,0 relative, where pcb rect could also be 0,0 relative,
 			/// but is probably not.
 			CGSegment* segment = wire.segment(n);
-			double gridRez = wire.width();
+            double gridRez = net->width();
 			CAStarNode::setScene(pcb()->scene());
 			CAStarNode::setBounds(pcb()->structure()->boundary()->boundingRect()); // FIXME - use boundary()->shape()
 			CAStarNode::setGridRez(gridRez);
