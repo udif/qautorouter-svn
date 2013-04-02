@@ -106,12 +106,6 @@ bool CAStarNode::seek()
 		while(!mChildren.isEmpty() && !found)
 		{
 			CAStarNode* child = mChildren.first();
-			printf("this(%08X)[%g,%g] child[%g,%g] start[%g,%g] goal[%g,%g]\n",
-				   (quint64)this,
-				   pos().x(), pos().y(),
-				   child->pos().x(), child->pos().y(),
-				   mStart.x(), mStart.y(),
-				   mGoalPt.x(), mGoalPt.y() );
 			if ( !(found = child->seek()) )
 			{
 				// at this point child has been fully explored with no solution.

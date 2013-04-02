@@ -232,11 +232,11 @@ void SimpleRouter::route()
 			CAStarNode node(CAStarNode::start(),(CAStarNode*)NULL); // starting point
 			QList<CAStarNode*> path = node.path();
 			// FIXME - make a CGWire follow the A* nodes...
-			for(int n=0; n < path.count(); n++)
-			{
-				CAStarNode* node = path[n];
-				printf( "node[%g,%g]\n",node->pos().x(),node->pos().y());
-			}
+			//for(int n=0; n < path.count(); n++)
+			//{
+			//	CAStarNode* node = path[n];
+			//	printf( "node[%g,%g]\n",node->pos().x(),node->pos().y());
+			//}
 			emit status(currentStatus());
 		}
 		selectNet(net,false);
