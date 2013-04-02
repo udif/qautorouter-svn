@@ -9,12 +9,14 @@
 
 #include <QEventLoop>
 
-QRectF			CAStarNode::mBounds;
-QPointF			CAStarNode::mStart;
-QPointF			CAStarNode::mGoalPt;
-QRectF			CAStarNode::mGoalRect;
-QGraphicsScene*	CAStarNode::mScene=NULL;
-double			CAStarNode::mGridRez=1.0;
+QRectF              CAStarNode::mBounds;
+QPointF             CAStarNode::mStart;
+QPointF             CAStarNode::mGoalPt;
+QRectF              CAStarNode::mGoalRect;
+QGraphicsScene*     CAStarNode::mScene=NULL;
+double              CAStarNode::mGridRez=1.0;
+QList<CAStarNode*>  CAStarNode::mOpenList;
+QList<CAStarNode*>  CAStarNode::mClosedList;
 
 CAStarNode::CAStarNode(CAStarNode* parent)
 : mParent(parent)
@@ -128,16 +130,17 @@ bool CAStarNode::seek()
 	bool found = (goalRect().contains(pos()));
 	if ( !found )
 	{
+
 		close();
 		instantiateNeighbors();
-		while(!mChildren.isEmpty() && !found)
+        while(!mChildren.isEmpty() && !found)
 		{
 			CAStarNode* child = mChildren.first();
 			if ( !(found = child->seek()) )
 			{
 				// at this point child has been fully explored with no solution.
-				mChildren.takeFirst();
-				delete child;
+                mChildren.takeFirst();
+                delete child;
 			}
 		}
 	}

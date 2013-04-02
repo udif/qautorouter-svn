@@ -48,7 +48,8 @@ class CAStarNode
 
 		CAStarNode*				root();
 		CAStarNode*				parent()						{return mParent;}
-		QList<CAStarNode*>&		children()						{return mChildren;}
+        static QList<CAStarNode*>&		openlist()						{return mOpenList;}
+        static QList<CAStarNode*>&		closedlist()					{return mClosedList;}
 
 		double					cost();
 
@@ -95,13 +96,13 @@ class CAStarNode
 		static QRectF			mGoalRect;
 		static QGraphicsScene*	mScene;
 		static double			mGridRez;
-        static QGraphicsItem*   mMarker;
+        static QList<CAStarNode*>		mOpenList;
+        static QList<CAStarNode*>		mClosedList;
 
 		CAStarNode*				mParent;
 		QPointF					mPos;
 		double					mCost;
 		bool					mOpen;
-		QList<CAStarNode*>		mChildren;
 		double					mG;
 		double					mH;
         QList<QGraphicsItem*>	mPlot;
