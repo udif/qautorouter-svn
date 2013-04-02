@@ -206,7 +206,7 @@ void SimpleRouter::route()
 	{
 		CPcbNet* net = netStack().pop();
 		QList<CGPadstack*>& padstacks =	net->padstacksRef();
-		selectNet(net,true);
+        //selectNet(net,true);
 		for( int n=0; running() && n < padstacks.count()-1; n++)
 		{
 			/// Calculate grid resolution and positional offset here
@@ -233,11 +233,17 @@ void SimpleRouter::route()
 			CAStarNode node(CAStarNode::start(),(CAStarNode*)NULL); // starting point
 			QList<CAStarNode*> path = node.path();
 			// FIXME - make a CGWire follow the A* nodes...
-			//for(int n=0; n < path.count(); n++)
-			//{
-			//	CAStarNode* node = path[n];
-			//	printf( "node[%g,%g]\n",node->pos().x(),node->pos().y());
-			//}
+            QPainterPath painterPath;
+            for(int n=0; n < path.count(); n++)
+            {
+                CAStarNode* node = path[n];
+                printf( "node[%g,%g]\n",node->pos().x(),node->pos().y());
+                if ( n==0 )
+                    painterPath.moveTo( node->pos() );
+                else
+                    painterPath.lineTo( node->pos() );
+            }
+            CSpecctraObject::globalScene()->addPath(painterPath);
 			emit status(currentStatus());
 		}
 		selectNet(net,false);

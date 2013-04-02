@@ -92,22 +92,26 @@ QList<CAStarNode*>	CAStarNode::path()
 /// FIXME - quick hack for collision detection, let's do this better
 bool CAStarNode::plot(QPointF &pt, QColor c)
 {
-    QEventLoop loop;
     bool rc = true;
-	QRectF rect = gridRect(pt);
-    rect.adjust(1.5,1.5,-1.5,-1.5);
-    QGraphicsItem* item = scene()->addEllipse ( rect, c, QBrush() );
+    if ( !root()->contains(pt) )
+    {
+        QEventLoop loop;
+        QRectF rect = gridRect(pt);
 
-    if ( item->collidingItems(Qt::ContainsItemShape).count() > 1 ) // FIXME - always collides with outline
-    {
-        delete item;
-        rc = false;
+        rect.adjust(1.5,1.5,-1.5,-1.5);
+        QGraphicsItem* item = scene()->addEllipse ( rect, c, QBrush() );
+
+        if ( item->collidingItems(Qt::ContainsItemShape).count() > 1 ) // FIXME - always collides with outline
+        {
+            delete item;
+            rc = false;
+        }
+        else
+        {
+            mPlot.append(item);
+        }
+        loop.processEvents();
     }
-    else
-    {
-        mPlot.append(item);
-    }
-    loop.processEvents();
     return rc;
 }
 
