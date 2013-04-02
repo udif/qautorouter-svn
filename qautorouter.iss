@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "QAutoRouter"
-#define MyAppVersion "0.0.3"
+#define MyAppVersion "0.0.4"
 #define MyAppPublisher "EightBitGeek"
 #define MyAppURL "http://qautorouter.sourceforge.net"
 #define MyAppExeName "qa.exe"
@@ -37,26 +37,27 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-Source: "..\qautorouter-build-desktop\qautorouter\debug\qa.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\qautorouter-build-desktop\specctra\debug\specctra.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\qautorouter-build-desktop\plugins\simplerouter\debug\simplerouter.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion
+Source: "..\qautorouter-build-desktop-Qt_4_8_1_for_Desktop_-_MinGW__Qt_SDK__Debug\qautorouter\debug\qa.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\qautorouter-build-desktop-Qt_4_8_1_for_Desktop_-_MinGW__Qt_SDK__Debug\specctra\debug\specctra.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\qautorouter-build-desktop-Qt_4_8_1_for_Desktop_-_MinGW__Qt_SDK__Debug\plugins\simplerouter\debug\simplerouter.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion
 Source: "C:\QtSDK\mingw\bin\mingwm10.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\QtSDK\mingw\bin\libgcc_s_dw2-1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\QtSDK\Desktop\Qt\4.7.3\mingw\lib\QtNetworkd4.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\QtSDK\Desktop\Qt\4.7.3\mingw\lib\QtCored4.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\QtSDK\Desktop\Qt\4.7.3\mingw\lib\QtGuid4.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\qautorouter\examples\PA10.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
+Source: "C:\QtSDK\Desktop\Qt\4.8.1\mingw\lib\QtNetworkd4.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\QtSDK\Desktop\Qt\4.8.1\mingw\lib\QtCored4.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\QtSDK\Desktop\Qt\4.8.1\mingw\lib\QtGuid4.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\qautorouter\examples\spi4.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
 Source: "..\qautorouter\examples\alu.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
-Source: "..\qautorouter\examples\AT2XTKBD.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
-Source: "..\qautorouter\examples\DSKY.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
-Source: "..\qautorouter\examples\MSXCart.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
-Source: "..\qautorouter\examples\OPL2.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
-Source: "..\qautorouter\examples\P112.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
-Source: "..\qautorouter\examples\ppide.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
-Source: "..\qautorouter\examples\SCSI2IDE.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
-Source: "..\qautorouter\examples\sd.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
-Source: "..\qautorouter\examples\XT-IDE.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
+Source: "..\qautorouter\examples\brisc1-registers.dsn"; DestDir: "{app}\examples"; Flags: ignoreversion
+Source: "..\qautorouter\examples\broken\PA10.dsn"; DestDir: "{app}\examples\broken"; Flags: ignoreversion
+Source: "..\qautorouter\examples\broken\AT2XTKBD.dsn"; DestDir: "{app}\examples\broken"; Flags: ignoreversion
+Source: "..\qautorouter\examples\broken\DSKY.dsn"; DestDir: "{app}\examples\broken"; Flags: ignoreversion
+Source: "..\qautorouter\examples\broken\MSXCart.dsn"; DestDir: "{app}\examples\broken"; Flags: ignoreversion
+Source: "..\qautorouter\examples\broken\OPL2.dsn"; DestDir: "{app}\examples\broken"; Flags: ignoreversion
+Source: "..\qautorouter\examples\broken\P112.dsn"; DestDir: "{app}\examples\broken"; Flags: ignoreversion
+Source: "..\qautorouter\examples\broken\ppide.dsn"; DestDir: "{app}\examples\broken"; Flags: ignoreversion
+Source: "..\qautorouter\examples\broken\SCSI2IDE.dsn"; DestDir: "{app}\examples\broken"; Flags: ignoreversion
+Source: "..\qautorouter\examples\broken\sd.dsn"; DestDir: "{app}\examples\broken"; Flags: ignoreversion
+Source: "..\qautorouter\examples\broken\XT-IDE.dsn"; DestDir: "{app}\examples\broken"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

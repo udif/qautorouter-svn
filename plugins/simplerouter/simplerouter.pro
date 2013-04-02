@@ -18,4 +18,4 @@ HEADERS += simplerouter.h \
     castarnode.h
 OTHER_FILES += README.txt
 unix: LIBS += -L../../specctra -lspecctra
-win32: LIBS += -L../../../qautorouter-build-desktop/specctra/release -L../../../qautorouter-build-desktop/specctra/debug -lspecctra
+win32: LIBS += -L../../../qautorouter-build-desktop-Qt_4_8_1_for_Desktop_-_MinGW__Qt_SDK__Debug/specctra/release -L../../../qautorouter-build-desktop-Qt_4_8_1_for_Desktop_-_MinGW__Qt_SDK__Debug/specctra/debug -lspecctra
