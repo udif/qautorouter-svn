@@ -73,6 +73,7 @@ class CAStarNode
 	private:
 
 		void					plot(QPointF& pt, QColor c);
+		void					unplot();
 		bool					seek();
 		bool                    contains(QPointF& pt, CAStarNode* ignore=NULL);
 		static QRectF			gridRect(QPointF pt);
@@ -101,6 +102,7 @@ class CAStarNode
 		QList<CAStarNode*>		mChildren;
 		double					mG;
 		double					mH;
+		QList<QGraphicsItem*>	mPlot;
 
 };
 

@@ -91,7 +91,17 @@ QList<CAStarNode*>	CAStarNode::path()
 void CAStarNode::plot(QPointF &pt, QColor c)
 {
 	QRectF rect = gridRect(pt);
-	scene()->addEllipse ( rect, c, QBrush() );
+	mPlot.append( scene()->addEllipse ( rect, c, QBrush() ) );
+}
+
+/// Unplot markers
+void CAStarNode::unplot()
+{
+	while(!mPlot.isEmpty())
+	{
+		QGraphicsItem* item = mPlot.takeLast();
+		delete item;
+	}
 }
 
 /// Seek a path to the goal.
@@ -290,6 +300,7 @@ void CAStarNode::clear()
 	}
 	mOpen	= true;
 	mG		= 0;
+	unplot();
 }
 
 CAStarNode& CAStarNode::operator=(const CAStarNode& other)
