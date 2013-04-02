@@ -15,6 +15,7 @@ QPointF			CAStarNode::mGoalPt;
 QRectF			CAStarNode::mGoalRect;
 QGraphicsScene*	CAStarNode::mScene=NULL;
 double			CAStarNode::mGridRez=1.0;
+QGraphicsItem*  CAStarNode::mMarker=NULL;
 
 CAStarNode::CAStarNode(CAStarNode* parent)
 : mParent(parent)
@@ -88,20 +89,27 @@ QList<CAStarNode*>	CAStarNode::path()
 }
 
 /// Plot a grid marker, primarily for debugging and search pattern observation purposes.
-void CAStarNode::plot(QPointF &pt, QColor c)
+/// @return false if there was a collision, else true if the cell is empty
+/// FIXME - quick hack for collision detection, let's do this better
+bool CAStarNode::plot(QPointF &pt, QColor c)
 {
+    QEventLoop loop;
+    bool rc = true;
 	QRectF rect = gridRect(pt);
-	mPlot.append( scene()->addEllipse ( rect, c, QBrush() ) );
-}
+    rect.adjust(1.5,1.5,-1.5,-1.5);
+    if ( mMarker )
+    {
+        delete mMarker;
+        mMarker=NULL;
+    }
+    mMarker = scene()->addEllipse ( rect, c, QBrush() );
 
-/// Unplot markers
-void CAStarNode::unplot()
-{
-	while(!mPlot.isEmpty())
-	{
-		QGraphicsItem* item = mPlot.takeLast();
-		delete item;
-	}
+    if ( mMarker->collidingItems(Qt::ContainsItemShape).count() > 1 ) // FIXME - always collides with outline
+    {
+        rc = false;
+    }
+    loop.processEvents();
+    return rc;
 }
 
 /// Seek a path to the goal.
@@ -175,8 +183,8 @@ CAStarNode* CAStarNode::instantiateNeighbor(int x, int y)
 	QPointF pt;
 	pt.setX( pos().x() + (x*gridRez()) );
 	pt.setY( pos().y() + (y*gridRez()) );
-	if ( isTraversable(pt) )
-	{
+    if ( isTraversable(pt) )
+    {
 		/// examine the parents to see if somebody nearby
 		/// already has that node covered...
 		if (!root()->contains(pt,this))
@@ -184,7 +192,6 @@ CAStarNode* CAStarNode::instantiateNeighbor(int x, int y)
 			CAStarNode* child = new CAStarNode(pt,this);
 			Q_ASSERT( child != NULL );
 			insort(child);
-			plot(pt,QColor(Qt::yellow));
 			return child;
 		}
 	}
@@ -194,7 +201,6 @@ CAStarNode* CAStarNode::instantiateNeighbor(int x, int y)
 /// The initial neigbor instantiation, these become owned by this as children.
 void CAStarNode::instantiateNeighbors()
 {
-	QEventLoop loop;
 	if ( mChildren.isEmpty() )
 	{
 		for(int x=-1; x<=1; x++)
@@ -205,7 +211,6 @@ void CAStarNode::instantiateNeighbors()
 			}
 		}
 	}
-	loop.processEvents();
 }
 
 /// Determine of the potential node would be traversable
@@ -214,9 +219,8 @@ bool CAStarNode::isTraversable(QPointF &pt)
 	bool rc = false;
 	if ( bounds().contains(pt) )
 	{
-		// FIXME - test for collisions with objects
-		rc = true;
-	}
+        rc = (plot(pt,QColor(Qt::yellow)) || mGoalRect.adjusted(-1,-1,1,1).contains( pt ));
+    }
 	return rc;
 }
 
@@ -300,7 +304,6 @@ void CAStarNode::clear()
 	}
 	mOpen	= true;
 	mG		= 0;
-	unplot();
 }
 
 CAStarNode& CAStarNode::operator=(const CAStarNode& other)

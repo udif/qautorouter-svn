@@ -227,6 +227,7 @@ void SimpleRouter::route()
 			CAStarNode::setGridRez(gridRez);
 			CAStarNode::setStart( padstack1->origin() );
 			CAStarNode::setGoal( padstack2->origin() );
+            CAStarNode::setGoalRect( padstack2->boundingRect().adjusted(-1,-1,1,1) );
 
 			/// Begin seeking a path...
 			CAStarNode node(CAStarNode::start(),(CAStarNode*)NULL); // starting point

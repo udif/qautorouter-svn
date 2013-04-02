@@ -62,9 +62,11 @@ class CAStarNode
 
 		static void				setGoal(QPointF pt);
 		static QPointF&			goal()							{return mGoalPt;}
-		static QRectF&			goalRect()						{return mGoalRect;}
 
-		static void				setScene(QGraphicsScene* scene)	{mScene=scene;}
+        static void             setGoalRect(QRectF rect)        {mGoalRect=rect;scene()->addRect( rect, QColor(Qt::green), QBrush() );}
+        static QRectF&			goalRect()						{return mGoalRect;}
+
+        static void				setScene(QGraphicsScene* scene)	{mScene=scene;}
 		static QGraphicsScene*	scene()							{return mScene;}
 
 		static void				setGridRez(double rez)			{mGridRez = rez;}
@@ -72,8 +74,7 @@ class CAStarNode
 
 	private:
 
-		void					plot(QPointF& pt, QColor c);
-		void					unplot();
+        bool					plot(QPointF& pt, QColor c);
 		bool					seek();
 		bool                    contains(QPointF& pt, CAStarNode* ignore=NULL);
 		static QRectF			gridRect(QPointF pt);
@@ -93,7 +94,7 @@ class CAStarNode
 		static QRectF			mGoalRect;
 		static QGraphicsScene*	mScene;
 		static double			mGridRez;
-
+        static QGraphicsItem*   mMarker;
 
 		CAStarNode*				mParent;
 		QPointF					mPos;
@@ -102,7 +103,6 @@ class CAStarNode
 		QList<CAStarNode*>		mChildren;
 		double					mG;
 		double					mH;
-		QList<QGraphicsItem*>	mPlot;
 
 };
 

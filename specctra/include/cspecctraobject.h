@@ -83,6 +83,9 @@ class CSpecctraObject : public QObject, public QGraphicsItem /* QGraphicsPathIte
 		virtual void					paint(QPainter*,const QStyleOptionGraphicsItem*, QWidget*);
 		virtual void					dump(int lvl=0);
 
+        virtual void                    setDirty(bool)              {}
+        virtual bool                    dirty()                     {return false;}
+
 		virtual CPcbRule*				rule();
 
 		static QGraphicsScene*				globalScene();

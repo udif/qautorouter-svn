@@ -301,7 +301,7 @@ CGWire& CPcbNet::wire()
 {
 	if ( mWire->isEmpty() )
 	{
-		CGSegment* obj = NULL;
+        CGSegment* obj = NULL;
 		for( int n=0; n < this->padstacks(); n++)
 		{
 			CGPadstack* pad = padstack(n);
@@ -316,10 +316,11 @@ CGWire& CPcbNet::wire()
 				obj = child;
 			}
 			obj->setOrigin(pad->origin());
+            obj->hide();
 			obj->append(pad);
 			obj = pad;
 		}
-	}
+    }
 	return *mWire;
 }
 
@@ -342,38 +343,13 @@ QRectF CPcbNet::boundingRect() const
 
 QPainterPath CPcbNet::shape() const
 {
-#if 1
 	QPainterPath p;
 	CPcbNet* me=(CPcbNet*)this;
 	me->wire(); /* prime the wire segments */
 	return p;
-#else
-		CPcbNet* me=(CPcbNet*)this;
-	if ( me->mShape.isEmpty())
-	{
-		for(int n=0; n < me->padstacks(); n++ )
-		{
-			CGPadstack* pad = me->padstack(n);
-			if ( pad != NULL )
-			{
-				if ( n== 0 )
-					me->mShape.moveTo(pad->pos());
-				else
-					me->mShape.lineTo(pad->pos());
-			}
-		}
-	}
-	return me->mShape;
-#endif
 }
 
 void CPcbNet::paint(QPainter* /* painter */, const QStyleOptionGraphicsItem* /* option */, QWidget* /* widget */)
 {
-	QPainterPath p = shape();
-#if 0
-	painter->setRenderHint(QPainter::Antialiasing);
-	painter->scale(scale(),scale());
-	painter->setPen(QPen(QColor(255, 255, 255), 3, Qt::SolidLine,Qt::FlatCap,Qt::MiterJoin));
-	painter->drawPath(shape());
-#endif
+    QPainterPath p = shape(); /* prime the shape */
 }

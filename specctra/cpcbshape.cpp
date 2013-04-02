@@ -57,7 +57,7 @@ QPainterPath CPcbShape::shape()
 	else if ( child->objectClass() == "path")
 	{
 		CPcbPath* path = (CPcbPath*)child;
-		ppath = path->oval();
+        ppath = path->oval();
 	}
 	return ppath;
 }

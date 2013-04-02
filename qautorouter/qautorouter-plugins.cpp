@@ -42,7 +42,7 @@ void QAutoRouter::start()
 							loop.processEvents();
 						}
 						QMessageBox::information(this,tr("Routing Complete"),tr("Routing Completed. Total time: ")+autorouter()->elapsed());
-					}
+                    }
 					mAutoRouter=NULL;
 					ui->actionStart->setEnabled(true);
 					ui->actionStop->setEnabled(false);

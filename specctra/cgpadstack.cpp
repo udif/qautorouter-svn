@@ -145,4 +145,18 @@ QPainterPath CGPadstack::shape() const
 	return ppath;
 }
 
+QRectF CGPadstack::boundingRect() const
+{
+    QRectF rc;
+    QPainterPath ppath;
+    CGPadstack* me = (CGPadstack*)this;
+    for(int n=0; n < me->layers().count(); n++)
+    {
+        CGPad* pPad = me->pad(me->layers().at(n));
+        ppath.addPath(pPad->shape());
+    }
+    rc = ppath.boundingRect();
+    return rc;
+}
+
 

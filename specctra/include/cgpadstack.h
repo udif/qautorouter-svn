@@ -36,7 +36,8 @@ class CGPadstack : public CGSegment
 		static CGPadstack*			padstack(QString& unitRef);
 		static QMap<QString,CGPadstack*> padstacks() {return mGPadstacks;}
 
-		virtual QPainterPath		shape() const;
+        virtual QRectF				boundingRect() const;
+        virtual QPainterPath		shape() const;
 
 	private:
 		static QMap<QString,CGPadstack*> mGPadstacks;

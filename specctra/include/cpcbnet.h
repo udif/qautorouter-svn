@@ -42,19 +42,19 @@ class CPcbNet : public CSpecctraObject
 		void						dumpLength();
 
 		void						setWidth(double w) {mWidth=w;}
-		double						width();
+        double						width();
 		bool						routed();
 		CPcbClass*					netClass();
 		virtual QRectF				boundingRect() const;
 		virtual QPainterPath		shape() const;
-		virtual void				paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
-	protected:
+        virtual void				paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
+
+    protected:
 		CGPadstack*					closest(int n,QPointF pt);
 		CGPadstack*					farthest(int n,QPointF pt);
 		void						swap(CGPadstack* p1,CGPadstack* p2);
 
 	private:
-		QPainterPath				mShape;
 		double						mWidth;			/* trace width */
 		QStringList					mPinRefs;
 		QList<CGPadstack*>			mPadstacks;		/* pin padstacks */
