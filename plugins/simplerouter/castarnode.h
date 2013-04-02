@@ -63,7 +63,7 @@ class CAStarNode
 		static void				setGoal(QPointF pt);
 		static QPointF&			goal()							{return mGoalPt;}
 
-        static void             setGoalRect(QRectF rect)        {mGoalRect=rect;scene()->addRect( rect, QColor(Qt::green), QBrush() );}
+        static void             setGoalRect(QRectF rect)        {mGoalRect=rect;}
         static QRectF&			goalRect()						{return mGoalRect;}
 
         static void				setScene(QGraphicsScene* scene)	{mScene=scene;}
@@ -75,7 +75,8 @@ class CAStarNode
 	private:
 
         bool					plot(QPointF& pt, QColor c);
-		bool					seek();
+        void					unplot();
+        bool					seek();
 		bool                    contains(QPointF& pt, CAStarNode* ignore=NULL);
 		static QRectF			gridRect(QPointF pt);
 		CAStarNode*				instantiateNeighbor(int x, int y);
@@ -103,6 +104,7 @@ class CAStarNode
 		QList<CAStarNode*>		mChildren;
 		double					mG;
 		double					mH;
+        QList<QGraphicsItem*>	mPlot;
 
 };
 

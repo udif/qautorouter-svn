@@ -15,7 +15,6 @@ QPointF			CAStarNode::mGoalPt;
 QRectF			CAStarNode::mGoalRect;
 QGraphicsScene*	CAStarNode::mScene=NULL;
 double			CAStarNode::mGridRez=1.0;
-QGraphicsItem*  CAStarNode::mMarker=NULL;
 
 CAStarNode::CAStarNode(CAStarNode* parent)
 : mParent(parent)
@@ -97,19 +96,25 @@ bool CAStarNode::plot(QPointF &pt, QColor c)
     bool rc = true;
 	QRectF rect = gridRect(pt);
     rect.adjust(1.5,1.5,-1.5,-1.5);
-    if ( mMarker )
-    {
-        delete mMarker;
-        mMarker=NULL;
-    }
-    mMarker = scene()->addEllipse ( rect, c, QBrush() );
+    QGraphicsItem* item = scene()->addEllipse ( rect, c, QBrush() );
 
-    if ( mMarker->collidingItems(Qt::ContainsItemShape).count() > 1 ) // FIXME - always collides with outline
+    if ( item->collidingItems(Qt::ContainsItemShape).count() > 1 ) // FIXME - always collides with outline
     {
+        delete item;
         rc = false;
+    }
+    else
+    {
+        mPlot.append(item);
     }
     loop.processEvents();
     return rc;
+}
+
+void CAStarNode::unplot()
+{
+    while(!mPlot.isEmpty())
+        delete mPlot.takeLast();
 }
 
 /// Seek a path to the goal.
@@ -219,7 +224,7 @@ bool CAStarNode::isTraversable(QPointF &pt)
 	bool rc = false;
 	if ( bounds().contains(pt) )
 	{
-        rc = (plot(pt,QColor(Qt::yellow)) || mGoalRect.adjusted(-1,-1,1,1).contains( pt ));
+        rc = plot(pt,QColor(Qt::yellow)) || mGoalRect.contains( pt );
     }
 	return rc;
 }
@@ -304,6 +309,7 @@ void CAStarNode::clear()
 	}
 	mOpen	= true;
 	mG		= 0;
+    unplot();
 }
 
 CAStarNode& CAStarNode::operator=(const CAStarNode& other)
