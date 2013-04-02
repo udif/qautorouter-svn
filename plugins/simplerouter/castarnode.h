@@ -27,8 +27,8 @@ class CAStarNode
 		CAStarNode& operator=(const CAStarNode& other);
 		bool operator==(const CAStarNode& other) const;
 		bool operator!=(const CAStarNode& other) const;
-		bool operator<(const CAStarNode& other) const;
-		bool operator>(const CAStarNode& other) const;
+		bool operator<(const CAStarNode& other);
+		bool operator>(const CAStarNode& other);
 
 		double					x()								{return mPos.x();}
 		double					y()								{return mPos.y();}
@@ -46,11 +46,11 @@ class CAStarNode
 
 		void					clear();
 
-        CAStarNode*				root();
-        CAStarNode*				parent()						{return mParent;}
-        QList<CAStarNode*>&		children()						{return mChildren;}
+		CAStarNode*				root();
+		CAStarNode*				parent()						{return mParent;}
+		QList<CAStarNode*>&		children()						{return mChildren;}
 
-		double					cost()							{return g() + h();}
+		double					cost();
 
 		QList<CAStarNode*>		path();
 
@@ -72,12 +72,13 @@ class CAStarNode
 
 	private:
 
+		void					plot(QPointF& pt, QColor c);
 		bool					seek();
-        bool                    contains(QPointF& pt, CAStarNode* ignore=NULL);
-        static QRectF			gridRect(QPointF pt);
-        CAStarNode*				instantiateNeighbor(int x, int y);
-        void					instantiateNeighbors();
-        void					insort(CAStarNode* child);
+		bool                    contains(QPointF& pt, CAStarNode* ignore=NULL);
+		static QRectF			gridRect(QPointF pt);
+		CAStarNode*				instantiateNeighbor(int x, int y);
+		void					instantiateNeighbors();
+		void					insort(CAStarNode* child);
 		bool					isTraversable(QPointF& pt);
 		double					manhattanLength(QPointF& a, QPointF& b);
 		double					adjacentCost(QPointF& a, QPointF& b);
@@ -100,6 +101,7 @@ class CAStarNode
 		QList<CAStarNode*>		mChildren;
 		double					mG;
 		double					mH;
+
 };
 
 

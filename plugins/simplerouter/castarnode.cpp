@@ -3,8 +3,11 @@
 * Author: Mike Sharkey <mike@pikeaero.com>                                     *
 *******************************************************************************/
 #include "castarnode.h"
+
 #include <math.h>
 #include <stdio.h>
+
+#include <QEventLoop>
 
 QRectF			CAStarNode::mBounds;
 QPointF			CAStarNode::mStart;
@@ -60,10 +63,10 @@ CAStarNode::~CAStarNode()
 /// @return the root node
 CAStarNode* CAStarNode::root()
 {
-    CAStarNode* rc=this;
-    while( rc->parent() )
-        rc = rc->parent();
-    return rc;
+	CAStarNode* rc=this;
+	while( rc->parent() )
+		rc = rc->parent();
+	return rc;
 }
 
 
@@ -84,6 +87,13 @@ QList<CAStarNode*>	CAStarNode::path()
 	return rc;
 }
 
+/// Plot a grid marker, primarily for debugging and search pattern observation purposes.
+void CAStarNode::plot(QPointF &pt, QColor c)
+{
+	QRectF rect = gridRect(pt);
+	scene()->addEllipse ( rect, c, QBrush() );
+}
+
 /// Seek a path to the goal.
 /// @return true if we found a path.
 bool CAStarNode::seek()
@@ -91,23 +101,23 @@ bool CAStarNode::seek()
 	bool found = (goalRect().contains(pos()));
 	if ( !found )
 	{
-        close();
-        instantiateNeighbors();
-        while(!mChildren.isEmpty() && !found)
+		close();
+		instantiateNeighbors();
+		while(!mChildren.isEmpty() && !found)
 		{
 			CAStarNode* child = mChildren.first();
-            printf("this(%08X)[%g,%g] child[%g,%g] start[%g,%g] goal[%g,%g]\n",
-                   (quint64)this,
-                   pos().x(), pos().y(),
-                   child->pos().x(), child->pos().y(),
-                   mStart.x(), mStart.y(),
-                   mGoalPt.x(), mGoalPt.y() );
-            if ( !(found = child->seek()) )
-            {
+			printf("this(%08X)[%g,%g] child[%g,%g] start[%g,%g] goal[%g,%g]\n",
+				   (quint64)this,
+				   pos().x(), pos().y(),
+				   child->pos().x(), child->pos().y(),
+				   mStart.x(), mStart.y(),
+				   mGoalPt.x(), mGoalPt.y() );
+			if ( !(found = child->seek()) )
+			{
 				// at this point child has been fully explored with no solution.
-                mChildren.takeFirst();
-                delete child;
-            }
+				mChildren.takeFirst();
+				delete child;
+			}
 		}
 	}
 	return found;
@@ -117,8 +127,8 @@ bool CAStarNode::seek()
 /// @param pt a point in scene coordinates.
 QRectF CAStarNode::gridRect(QPointF pt)
 {
-    double gridX = pt.x() - (gridRez()/2.0);
-    double gridY = pt.y() - (gridRez()/2.0);
+	double gridX = pt.x() - (gridRez()/2.0);
+	double gridY = pt.y() - (gridRez()/2.0);
 	QRectF rc( gridX, gridY, gridRez(), gridRez() );
 	return rc;
 }
@@ -138,57 +148,60 @@ void CAStarNode::setGoal(QPointF pt)
 ///
 bool CAStarNode::contains(QPointF& pt, CAStarNode *ignore)
 {
-    bool rc = false;
-    if ( this != ignore )
-    {
-        if ( !(rc = gridRect( pos() ).contains( pt )) )
-        {
-            /// look at my children...
-            for( int n=0; !rc && n < mChildren.count(); n++ )
-            {
-                CAStarNode* child = mChildren[n];
-                rc = child->contains(pt,ignore);
-            }
-        }
-    }
-    return rc;
+	bool rc = false;
+	if ( this != ignore )
+	{
+		if ( !(rc = gridRect( pos() ).contains( pt )) )
+		{
+			/// look at my children...
+			for( int n=0; !rc && n < mChildren.count(); n++ )
+			{
+				CAStarNode* child = mChildren[n];
+				rc = child->contains(pt,ignore);
+			}
+		}
+	}
+	return rc;
 }
 
 /// Instantiate a single neigbor node...
 /// FIXME - can we optimize this?
 CAStarNode* CAStarNode::instantiateNeighbor(int x, int y)
 {
-    QPointF pt;
-    pt.setX( pos().x() + (x*gridRez()) );
-    pt.setY( pos().y() + (y*gridRez()) );
-    if ( isTraversable(pt) )
-    {
-        /// examine the parents to see if somebody nearby
-        /// already has that node covered...
-        if (!root()->contains(pt,this))
-        {
-            CAStarNode* child = new CAStarNode(pt,this);
-            Q_ASSERT( child != NULL );
-            insort(child);
-            return child;
-        }
-    }
-    return NULL;
+	QPointF pt;
+	pt.setX( pos().x() + (x*gridRez()) );
+	pt.setY( pos().y() + (y*gridRez()) );
+	if ( isTraversable(pt) )
+	{
+		/// examine the parents to see if somebody nearby
+		/// already has that node covered...
+		if (!root()->contains(pt,this))
+		{
+			CAStarNode* child = new CAStarNode(pt,this);
+			Q_ASSERT( child != NULL );
+			insort(child);
+			plot(pt,QColor(Qt::yellow));
+			return child;
+		}
+	}
+	return NULL;
 }
 
 /// The initial neigbor instantiation, these become owned by this as children.
 void CAStarNode::instantiateNeighbors()
 {
+	QEventLoop loop;
 	if ( mChildren.isEmpty() )
 	{
 		for(int x=-1; x<=1; x++)
 		{
 			for(int y=-1; y<=1; y++)
 			{
-                instantiateNeighbor(x,y);
+				instantiateNeighbor(x,y);
 			}
 		}
 	}
+	loop.processEvents();
 }
 
 /// Determine of the potential node would be traversable
@@ -212,6 +225,7 @@ void CAStarNode::insort(CAStarNode *child)
 		if ( *child < *other )
 		{
 			mChildren.insert(n,child);
+			return;
 		}
 	}
 	mChildren.append(child);
@@ -233,20 +247,30 @@ double CAStarNode::adjacentCost(QPointF &a, QPointF &b)
 {
 	double diffX = fabs(a.x()-b.x());
 	double diffY = fabs(a.y()-b.y());
-    double rc = ( diffX && diffY ) ? (10.0*1.414) : 10.0;
+	double rc = ( diffX && diffY ) ? (10.0*1.414) : 10.0;
 	return rc;
 }
 
+/// Calculate the cost of this node
+double CAStarNode::cost()
+{
+	return (mCost = g() + h());
+}
+
 /// Calculate G, the movement cost to move from the starting point A
-/// to a given square on the grid, following the path generated to get there.
+/// to this cell of the grid, following the path generated to get there.
 double CAStarNode::g()
 {
 	if ( !mG )
 	{
-		mG = adjacentCost( parent()->mPos, mPos );
 		if ( parent() )
 		{
-			mG += parent()->mG;
+			mG = adjacentCost( parent()->mPos, mPos );	// add the cost from parent to this
+			mG += parent()->g();						// recurse through ancestors...
+		}
+		else
+		{
+			mG = 0;
 		}
 	}
 	return mG;
@@ -294,14 +318,16 @@ bool CAStarNode::operator!=(const CAStarNode& other) const
 	return !(mPos.x() == other.mPos.x() && mPos.y() == other.mPos.y());
 }
 
-bool CAStarNode::operator<(const CAStarNode& other) const
+bool CAStarNode::operator<(const CAStarNode& other)
 {
-	return other.mCost < mCost;
+	CAStarNode* p = (CAStarNode*)&other;
+	return cost() < p->cost();
 }
 
-bool CAStarNode::operator>(const CAStarNode& other) const
+bool CAStarNode::operator>(const CAStarNode& other)
 {
-	return other.mCost > mCost;
+	CAStarNode* p = (CAStarNode*)&other;
+	return cost() > p->cost();
 }
 
 

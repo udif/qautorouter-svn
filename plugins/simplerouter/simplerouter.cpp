@@ -205,9 +205,9 @@ void SimpleRouter::route()
 	while( netStack().count() )
 	{
 		CPcbNet* net = netStack().pop();
-        QList<CGPadstack*>& padstacks =	net->padstacksRef();
+		QList<CGPadstack*>& padstacks =	net->padstacksRef();
 		selectNet(net,true);
-        for( int n=0; running() && n < padstacks.count()-1; n++)
+		for( int n=0; running() && n < padstacks.count()-1; n++)
 		{
 			/// Calculate grid resolution and positional offset here
 			/// A* is operating in terms of a theoretical grid of arbitrary
@@ -218,15 +218,15 @@ void SimpleRouter::route()
 
 			/// Over simplified grid settings, but should be sufficient for the initial testing...
 			/// Note that A* grid rect is 0,0 relative, where pcb rect could also be 0,0 relative,
-            /// but is probably not.
-            CGPadstack* padstack1 = padstacks[n];
-            CGPadstack* padstack2 = padstacks[n+1];
-            double gridRez = net->width();
-			CAStarNode::setScene(pcb()->scene());
+			/// but is probably not.
+			CGPadstack* padstack1 = padstacks[n];
+			CGPadstack* padstack2 = padstacks[n+1];
+			double gridRez = net->width();
+			CAStarNode::setScene(CSpecctraObject::globalScene());
 			CAStarNode::setBounds(pcb()->structure()->boundary()->boundingRect()); // FIXME - use boundary()->shape()
 			CAStarNode::setGridRez(gridRez);
-            CAStarNode::setStart( padstack1->origin() );
-            CAStarNode::setGoal( padstack2->origin() );
+			CAStarNode::setStart( padstack1->origin() );
+			CAStarNode::setGoal( padstack2->origin() );
 
 			/// Begin seeking a path...
 			CAStarNode node(CAStarNode::start(),(CAStarNode*)NULL); // starting point
