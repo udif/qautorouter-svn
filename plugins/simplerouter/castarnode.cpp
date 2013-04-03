@@ -6,24 +6,10 @@
 
 #define inherited CAStarMarker
 
-CAStarNode::CAStarNode(CAStarNode* parent)
-: inherited(QPoint(0,0), CAStarMarker::Navigation)
-, mParent(parent)
-, mCost(0.0)
-{
-}
-
-CAStarNode::CAStarNode(QPoint pt, CAStarNode* parent)
+CAStarNode::CAStarNode(QPoint pt, QPoint parent)
 : inherited(pt, CAStarMarker::Navigation)
 , mParent(parent)
 , mCost(0.0)
-{
-}
-
-CAStarNode::CAStarNode(QPoint pt, double cost, CAStarNode* parent)
-: inherited(pt, CAStarMarker::Navigation)
-, mParent(parent)
-, mCost(cost)
 {
 }
 
@@ -50,26 +36,29 @@ CAStarNode& CAStarNode::operator=(const CAStarNode& other)
 	return *this;
 }
 
-bool CAStarNode::operator==(const CAStarNode& other) const
-{
-	return mPos.x() == other.mPos.x() && mPos.y() == other.mPos.y();
-}
-
-bool CAStarNode::operator!=(const CAStarNode& other) const
-{
-	return !(mPos.x() == other.mPos.x() && mPos.y() == other.mPos.y());
-}
-
 bool CAStarNode::operator<(const CAStarNode& other)
 {
-	CAStarNode* p = (CAStarNode*)&other;
-	return cost() < p->cost();
+    CAStarNode* p = (CAStarNode*)&other;
+    return cost() < p->cost();
 }
 
 bool CAStarNode::operator>(const CAStarNode& other)
 {
-	CAStarNode* p = (CAStarNode*)&other;
-	return cost() > p->cost();
+    CAStarNode* p = (CAStarNode*)&other;
+    return cost() > p->cost();
+}
+
+
+bool CAStarNode::operator<=(const CAStarNode& other)
+{
+    CAStarNode* p = (CAStarNode*)&other;
+    return cost() <= p->cost();
+}
+
+bool CAStarNode::operator>=(const CAStarNode& other)
+{
+    CAStarNode* p = (CAStarNode*)&other;
+    return cost() >= p->cost();
 }
 
 

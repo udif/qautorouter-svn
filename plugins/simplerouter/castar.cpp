@@ -28,6 +28,64 @@ CAStar::CAStar(const CAStar& other)
     }
 }
 
+/// seek the path.
+QList<CAStarNode> CAStar::path()
+{
+    int idx;
+    QList<CAStarNode> rc;
+    CAStarNode node(mStartPt);
+    insort(mOpenList,node);
+    while(!mOpenList.isEmpty() && (node = mOpenList.takeFirst()) != mGoalPt )
+    {
+        node = mOpenList.takeFirst();
+        QList<CAStarNode> children = childList(node);
+        for(int n=0; n < children.count(); n++)
+        {
+            CAStarNode child = children[n];
+            // child node already in the open list?
+            int oIdx = mOpenList.indexOf(child);
+            if ( oIdx >=0 )
+            {
+                // the existing node is better?
+                CAStarNode other = mOpenList[oIdx];
+                if ( other <= child )
+                    continue;
+            }
+            // child node already in the closed list?
+            int cIdx = mClosedList.indexOf(child);
+            if ( cIdx >= 0 )
+            {
+                // the existing node is better?
+                CAStarNode other = mClosedList[cIdx];
+                if ( other <= child )
+                    continue;
+            }
+            // remove child from open and closed lists
+            if ( oIdx >= 0 )
+                mOpenList.takeAt(oIdx);
+            if ( cIdx >= 0 )
+                mClosedList.takeAt(cIdx);
+            // add child to open list
+            insort(mOpenList,child);
+
+        }
+        insort(mClosedList,node);
+    }
+    // follow parent nodes from goal back to start
+    do
+    {
+        rc.append(node);
+        if ( ( idx = mClosedList.indexOf( node.parent() ) ) >= 0 )
+            node = mClosedList[idx];
+        else
+        if ( ( idx = mOpenList.indexOf( node.parent() ) ) >= 0 )
+            node = mOpenList[idx];
+        else
+            break;
+    } while( !isEmpty(node.pos()) );
+    return rc;
+}
+
 /// clear memory to initial state
 void CAStar::clear()
 {
@@ -43,6 +101,37 @@ QList<CAStarNode>& CAStar::openList()
 QList<CAStarNode>& CAStar::closedList()
 {
     return mClosedList;
+}
+
+// create a child list
+QList<CAStarNode> CAStar::childList(CAStarNode& node)
+{
+    QList<CAStarNode> rc;
+    for(int x=-1; x<=1; x++)
+    {
+        for(int y=-1; y<=1; y++)
+        {
+            CAStarNode child(QPoint(x,y),node.pos());
+            if ( mKeepoutList.indexOf(child) < 0 )
+            {
+                child.setCost( cost( child ) );
+                rc.append(child);
+            }
+        }
+    }
+    return rc;
+}
+
+// return the index of a node based on a point
+int CAStar::nodeIndex(QList<CAStarNode>& list,QPoint pt)
+{
+    int count = list.count();
+    for(int idx=0; idx < count; idx++)
+    {
+        if ( list[idx] == pt )
+            return idx;
+    }
+    return -1;
 }
 
 /// Transfer a node to the open list.
@@ -92,16 +181,20 @@ double CAStar::adjacentCost(QPoint a, QPoint b)
 /// insert a child into the list sorted by cost.
 void CAStar::insort(QList<CAStarNode>& list, CAStarNode& node)
 {
-    for(int n=0; n < list.length(); n++)
+    int idx = list.indexOf(node);
+    if ( idx < 0 ) // insorted already?
     {
-        CAStarNode other = list[n];
-        if ( node < other )
+        for(int n=0; n < list.length(); n++)
         {
-            list.insert(n,node);
-            return;
+            CAStarNode other = list[n];
+            if ( node < other )
+            {
+                list.insert(n,node);
+                return;
+            }
         }
+        list.append(node);
     }
-    list.append(node);
 }
 
 /// Calculate the cost of this node
@@ -116,11 +209,17 @@ double CAStar::cost(CAStarNode& node)
 double CAStar::g(CAStarNode& node)
 {
     double rc=0.0;
-    CAStarNode* parent = &node;
-    while ( parent && parent->parent() )
+    while( !isEmpty( node.parent() ) )
     {
-        rc += adjacentCost( parent->parent()->pos(), parent->pos() );
-        parent = parent->parent();
+        int idx;
+        CAStarNode parent;
+        if ( ( idx = mClosedList.indexOf( node.parent() ) ) >= 0 )
+            parent = mClosedList[idx];
+        else
+        if ( ( idx = mOpenList.indexOf( node.parent() ) ) >= 0 )
+            parent = mOpenList[idx];
+        rc += adjacentCost( parent.pos(), node.pos() );
+        node = parent;
     }
     return rc;
 }
@@ -132,4 +231,8 @@ double CAStar::h(CAStarNode& node)
     return rc;
 }
 
-
+/// Is the point empty - unset?
+bool CAStar::isEmpty(QPoint pt)
+{
+    return ( pt.x() == EMPTY_X && pt.y() == EMPTY_Y );
+}

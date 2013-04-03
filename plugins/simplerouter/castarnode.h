@@ -7,33 +7,34 @@
 
 #include "castarmarker.h"
 
+#include <QPoint>
+
 class CAStarNode : public CAStarMarker
 {
 	/// @brief An node to explore a path using the A* algorithm
 
 	public:
 
-		CAStarNode(CAStarNode* parent=NULL);
-        CAStarNode(QPoint pt, CAStarNode* parent=NULL);
-        CAStarNode(QPoint pt, double cost, CAStarNode* parent=NULL);
+        CAStarNode();
+        CAStarNode(QPoint pt, QPoint parent = QPoint(EMPTY_X,EMPTY_Y) );
 		CAStarNode(const CAStarNode& other);
 		~CAStarNode();
 
         CAStarNode&             operator=(const CAStarNode& other);
-        bool                    operator==(const CAStarNode& other) const;
-        bool                    operator!=(const CAStarNode& other) const;
         bool                    operator<(const CAStarNode& other);
         bool                    operator>(const CAStarNode& other);
+        bool                    operator<=(const CAStarNode& other);
+        bool                    operator>=(const CAStarNode& other);
 
-        void                    setParent(CAStarNode* parent)   {mParent=parent;}
-		CAStarNode*				parent()						{return mParent;}
+        void                    setParent(QPoint pt)            {mParent=pt;}
+        QPoint                  parent()						{return mParent;}
 
         void                    setCost(double cost)            {mCost=cost;}
         double                  cost()                          {return mCost;}
 
 	private:
 
-		CAStarNode*				mParent;
+        QPoint  				mParent;
 		double					mCost;
 
 

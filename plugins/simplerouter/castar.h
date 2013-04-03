@@ -31,15 +31,19 @@ class CAStar : public QObject
         CAStar(const CAStar& other);
         ~CAStar();
 
+        QList<CAStarNode>           path();
+
     protected:
         void                        clear();
 
+        bool                        isEmpty(QPoint pt);
         void                        insort(QList<CAStarNode>& list,CAStarNode& node);
         QList<CAStarNode>&          openList();
         QList<CAStarNode>&          closedList();
+        QList<CAStarNode>           childList(CAStarNode& node);
+        int                         nodeIndex(QList<CAStarNode>& list,QPoint pt);
         void                        open(CAStarNode& node);
         void                        close(CAStarNode& node);
-
 
         double                      manhattanLength(QPoint a, QPoint b);
         double                      adjacentCost(QPoint a, QPoint b);

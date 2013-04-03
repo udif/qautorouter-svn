@@ -7,6 +7,9 @@
 
 #include <QPoint>
 
+#define EMPTY_X 0x7FFFFFFF
+#define EMPTY_Y 0x7FFFFFFF
+
 class CAStarMarker
 {
     /// @brief A marker-node using the A* algorithm
@@ -26,6 +29,8 @@ class CAStarMarker
         CAStarMarker&           operator=(const CAStarMarker& other);
         bool                    operator==(const CAStarMarker& other) const;
         bool                    operator!=(const CAStarMarker& other) const;
+        bool                    operator==(const QPoint& other) const;
+        bool                    operator!=(const QPoint& other) const;
 
         int                     x()								{return mPos.x();}
         int                     y()								{return mPos.y();}

@@ -37,12 +37,23 @@ CAStarMarker& CAStarMarker::operator=(const CAStarMarker& other)
 
 bool CAStarMarker::operator==(const CAStarMarker& other) const
 {
-	return mPos.x() == other.mPos.x() && mPos.y() == other.mPos.y();
+    return mPos.x() == other.mPos.x() && mPos.y() == other.mPos.y();
 }
 
 bool CAStarMarker::operator!=(const CAStarMarker& other) const
 {
-	return !(mPos.x() == other.mPos.x() && mPos.y() == other.mPos.y());
+    return !(mPos.x() == other.mPos.x() && mPos.y() == other.mPos.y());
+}
+
+
+bool CAStarMarker::operator==(const QPoint& other) const
+{
+    return mPos.x() == other.x() && mPos.y() == other.y();
+}
+
+bool CAStarMarker::operator!=(const QPoint& other) const
+{
+    return !(mPos.x() == other.x() && mPos.y() == other.y());
 }
 
 
