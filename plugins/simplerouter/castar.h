@@ -26,25 +26,30 @@ class CAStar : public QObject
     /// @brief The A* algorithm
     Q_OBJECT
 	public:
+
         CAStar();
         CAStar( QList<CAStarMarker>& keepOut, QPoint startPt, QPoint goalPt );
         CAStar(const CAStar& other);
         ~CAStar();
 
+        QList<CAStarNode>           path( QList<CAStarMarker>& keepOut, QPoint startPt, QPoint goalPt );
         QList<CAStarNode>           path();
+        void                        setKeepOut(QList<CAStarMarker>& keepOut) {mKeepoutList=keepOut;}
+        void                        setStart(QPoint pt) {mStartPt=pt;}
+        void                        setGoal(QPoint pt) {mGoalPt=pt;}
+        QList<CAStarMarker>         keepOutList() {return mKeepoutList;}
+        QPoint                      start() {return mStartPt;}
+        QPoint                      goal()  {return mGoalPt;}
 
     protected:
-        void                        clear();
 
+        void                        clear();
         bool                        isEmpty(QPoint pt);
         void                        insort(QList<CAStarNode>& list,CAStarNode& node);
-        QList<CAStarNode>&          openList();
-        QList<CAStarNode>&          closedList();
         QList<CAStarNode>           childList(CAStarNode& node);
         int                         nodeIndex(QList<CAStarNode>& list,QPoint pt);
         void                        open(CAStarNode& node);
         void                        close(CAStarNode& node);
-
         double                      manhattanLength(QPoint a, QPoint b);
         double                      adjacentCost(QPoint a, QPoint b);
         double                      g(CAStarNode& node);
@@ -52,6 +57,7 @@ class CAStar : public QObject
         double                      cost(CAStarNode& node);
 
 	private:
+
         QList<CAStarMarker>         mKeepoutList;
         QPoint                      mStartPt;
         QPoint                      mGoalPt;

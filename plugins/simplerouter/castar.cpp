@@ -7,6 +7,17 @@
 
 #define inherited QObject
 
+/// Construct an empty A* solver instance.
+CAStar::CAStar()
+: inherited()
+{
+}
+
+
+/// Construct an A* solver instance.
+/// keepOut An array of points to mark barriers including the area boundary.
+/// startPt The starting point.
+/// goalPt The goal, or ending point.
 CAStar::CAStar(QList<CAStarMarker>& keepOut, QPoint startPt, QPoint goalPt)
 : inherited()
 , mKeepoutList(keepOut)
@@ -15,6 +26,7 @@ CAStar::CAStar(QList<CAStarMarker>& keepOut, QPoint startPt, QPoint goalPt)
 {
 }
 
+/// Copy constructor
 CAStar::CAStar(const CAStar& other)
 : inherited()
 {
@@ -28,12 +40,26 @@ CAStar::CAStar(const CAStar& other)
     }
 }
 
+/// seek the path with parameters.
+/// keepOut An array of points to mark barriers including the area boundary.
+/// startPt The starting point.
+/// goalPt The goal, or ending point.
+QList<CAStarNode> CAStar::path(QList<CAStarMarker>& keepOut, QPoint startPt, QPoint goalPt)
+{
+    clear();
+    mKeepoutList = keepOut;
+    mStartPt = startPt;
+    mGoalPt = goalPt;
+    return path();
+}
+
 /// seek the path.
 QList<CAStarNode> CAStar::path()
 {
     int idx;
     QList<CAStarNode> rc;
     CAStarNode node(mStartPt);
+    clear();
     insort(mOpenList,node);
     while(!mOpenList.isEmpty() && (node = mOpenList.takeFirst()) != mGoalPt )
     {
@@ -86,24 +112,14 @@ QList<CAStarNode> CAStar::path()
     return rc;
 }
 
-/// clear memory to initial state
+/// clear the open/closed lists
 void CAStar::clear()
 {
-    openList().clear();
-    closedList().clear();
+    mOpenList.clear();
+    mClosedList.clear();
 }
 
-QList<CAStarNode>& CAStar::openList()
-{
-    return mOpenList;
-}
-
-QList<CAStarNode>& CAStar::closedList()
-{
-    return mClosedList;
-}
-
-// create a child list
+/// create a child list
 QList<CAStarNode> CAStar::childList(CAStarNode& node)
 {
     QList<CAStarNode> rc;
@@ -122,7 +138,7 @@ QList<CAStarNode> CAStar::childList(CAStarNode& node)
     return rc;
 }
 
-// return the index of a node based on a point
+/// return the index of a node based on a point
 int CAStar::nodeIndex(QList<CAStarNode>& list,QPoint pt)
 {
     int count = list.count();
@@ -138,24 +154,24 @@ int CAStar::nodeIndex(QList<CAStarNode>& list,QPoint pt)
 void CAStar::open(CAStarNode& node)
 {
     int idx;
-    if ( (idx=closedList().indexOf(node))>= 0 )
-        closedList().takeAt(idx);
-    if ( (idx=openList().indexOf(node))>= 0 )
-        openList().replace(idx,node);
+    if ( (idx=mClosedList.indexOf(node))>= 0 )
+        mClosedList.takeAt(idx);
+    if ( (idx=mOpenList.indexOf(node))>= 0 )
+        mOpenList.replace(idx,node);
     else
-        insort(openList(),node);
+        insort(mOpenList,node);
 }
 
 /// Transfer a node to the closed list.
 void CAStar::close(CAStarNode& node)
 {
     int idx;
-    if ( (idx=openList().indexOf(node))>= 0 )
-        openList().takeAt(idx);
-    if ( (idx=closedList().indexOf(node))>= 0 )
-        closedList().replace(idx,node);
+    if ( (idx=mOpenList.indexOf(node))>= 0 )
+        mOpenList.takeAt(idx);
+    if ( (idx=mClosedList.indexOf(node))>= 0 )
+        mClosedList.replace(idx,node);
     else
-        insort(closedList(),node);
+        insort(mClosedList,node);
 }
 
 /// Returns the sum of the absolute values of x() and y(), traditionally known as the "Manhattan length"
@@ -224,7 +240,7 @@ double CAStar::g(CAStarNode& node)
     return rc;
 }
 
-/// @brief The estimated movement cost to move from that given square on the grid to the final destination
+/// The estimated movement cost to move from that given square on the grid to the final destination
 double CAStar::h(CAStarNode& node)
 {
     double rc = manhattanLength( node.pos(), mGoalPt ) * 10.0;
