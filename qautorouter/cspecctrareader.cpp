@@ -60,7 +60,7 @@ CSpecctraReader::~CSpecctraReader()
 /**
   * @brief Make the appropriate specctra object based on the class name
   * @brief oClass The specctra class name
-  * @return a new CSpecctraObject derivitive of teh appropriate class.
+  * @return a new CSpecctraObject derivitive of the appropriate class.
   */
 CSpecctraObject* CSpecctraReader::make(QString& oClass,CSpecctraObject* parentObject)
 {

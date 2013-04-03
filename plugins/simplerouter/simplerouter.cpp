@@ -209,28 +209,14 @@ void SimpleRouter::route()
         //selectNet(net,true);
 		for( int n=0; running() && n < padstacks.count()-1; n++)
 		{
-			/// Calculate grid resolution and positional offset here
-			/// A* is operating in terms of a theoretical grid of arbitrary
-			/// resolution. We should calculate the grid rez based on the width
-			/// of the current wire combined with the rules governing clearance
-			/// such that the grid is of sufficient resolution to allow A* to
-			/// to bring the wire to it's tightest tolerance.
 
-			/// Over simplified grid settings, but should be sufficient for the initial testing...
-			/// Note that A* grid rect is 0,0 relative, where pcb rect could also be 0,0 relative,
-			/// but is probably not.
 			CGPadstack* padstack1 = padstacks[n];
 			CGPadstack* padstack2 = padstacks[n+1];
 			double gridRez = net->width();
-			CAStarNode::setScene(CSpecctraObject::globalScene());
-			CAStarNode::setBounds(pcb()->structure()->boundary()->boundingRect()); // FIXME - use boundary()->shape()
-			CAStarNode::setGridRez(gridRez);
-			CAStarNode::setStart( padstack1->origin() );
-			CAStarNode::setGoal( padstack2->origin() );
-            CAStarNode::setGoalRect( padstack2->boundingRect().adjusted(-1,-1,1,1) );
 
+#if 0
 			/// Begin seeking a path...
-			CAStarNode node(CAStarNode::start(),(CAStarNode*)NULL); // starting point
+            CAStarNo
 			QList<CAStarNode*> path = node.path();
 			// FIXME - make a CGWire follow the A* nodes...
             QPainterPath painterPath;
@@ -244,6 +230,7 @@ void SimpleRouter::route()
                     painterPath.lineTo( node->pos() );
             }
             CSpecctraObject::globalScene()->addPath(painterPath);
+#endif
 			emit status(currentStatus());
 		}
 		selectNet(net,false);
