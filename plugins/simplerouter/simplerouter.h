@@ -14,6 +14,8 @@
 #include <QMap>
 #include <cplugininterface.h>
 
+#include "castar.h"
+
 class CPcb;
 class CPcbNet;
 class CGSegment;
@@ -58,17 +60,16 @@ class SimpleRouter : public QObject, public CPluginInterface
 		void						select();
 		void						route();
 
-		void						initializeBox();				/** initialize the expanding box */
-		void						expandBox();					/** expand the bounding box */
-
 		QStack<CPcbNet*>&			netStack()	{return mNetStack;}
+
+        QList<CAStarMarker>&        keepOutList();
 
 	private:
 		CPcb*						mPcb;
 		QDateTime					mStartTime;
 		tRunState					mState;
 		QStack<CPcbNet*>			mNetStack;						/** the current work stack */
-		QRectF						mBoundingBox;					/** the expanding bounding box */
+        QList<CAStarMarker>         mKeepOutList;
 };
 
 #endif // SIMPLEROUTER_H

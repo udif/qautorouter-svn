@@ -37,7 +37,7 @@ class CAStar : public QObject
         void                        setKeepOut(QList<CAStarMarker>& keepOut) {mKeepoutList=keepOut;}
         void                        setStart(QPoint pt) {mStartPt=pt;}
         void                        setGoal(QPoint pt) {mGoalPt=pt;}
-        QList<CAStarMarker>         keepOutList() {return mKeepoutList;}
+        QList<CAStarMarker>&        keepOutList() {return mKeepoutList;}
         QPoint                      start() {return mStartPt;}
         QPoint                      goal()  {return mGoalPt;}
 

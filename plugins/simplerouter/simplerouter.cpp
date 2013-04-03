@@ -197,9 +197,16 @@ void SimpleRouter::select()
 		stop();
 }
 
-/**
-  * @brief Route a net.
-  */
+/// Generate the keepout list
+QList<CAStarMarker>& SimpleRouter::keepOutList()
+{
+    mKeepOutList.clear();
+    /// populate keepout list in terms of A* grid resolution vs. barrier objects
+    /// on the PCB, starting with the boundaries.
+    return mKeepOutList;
+}
+
+/// route some nets...
 void SimpleRouter::route()
 {
 	while( netStack().count() )
