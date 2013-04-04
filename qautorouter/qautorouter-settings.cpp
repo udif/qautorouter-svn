@@ -23,7 +23,7 @@ void QAutoRouter::editPreferences()
   */
 void QAutoRouter::writeSettings()
 {
-    QSettings settings("8bit.zapto.org", "QAutoRouter-0.0.4");
+    QSettings settings("8bit.zapto.org", "QAutoRouter-"+QString(VERSION_STRING));
 
 	settings.beginGroup("MainWindow");
 		settings.setValue("size", size());
@@ -75,7 +75,7 @@ void QAutoRouter::writeSettings()
   */
 void QAutoRouter::readSettings()
 {
-    QSettings settings("8bit.zapto.org", "QAutoRouter-0.0.4");
+    QSettings settings("8bit.zapto.org", "QAutoRouter-"+QString(VERSION_STRING));
 
 	settings.beginGroup("MainWindow");
 		resize(settings.value("size", QSize(800, 600)).toSize());

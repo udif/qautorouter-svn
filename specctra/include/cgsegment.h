@@ -8,6 +8,7 @@
 #include <QObject>
 #include <QPainterPath>
 #include <QGraphicsItem>
+#include <QPolygonF>
 
 class CPcb;
 class CPcbNet;
@@ -53,7 +54,7 @@ class CGSegment : public QObject, public QGraphicsItem
 
 		virtual QRectF				boundingRect() const;
 		virtual QPainterPath		shape() const;
-		virtual void				paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
+        virtual void				paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
 
 		virtual CPcbNet*			net();
 		virtual bool				selected();
@@ -63,7 +64,9 @@ class CGSegment : public QObject, public QGraphicsItem
 		virtual	bool				routable()	{return isA(Wire) || isA(Via);}
 		virtual	void				route();
 
-	public slots:
+        virtual QPolygonF           polygon();
+
+public slots:
 		virtual void				clear();
 
 	protected:

@@ -314,11 +314,31 @@ void CPcbPlace::createPadstacks()
 	}
 }
 
+/// does this placement contain the padstack
+bool CPcbPlace::contains(CGSegment* padstack)
+{
+    for(int n=0; n < mPads.count(); n++)
+    {
+        CGPadstack* pad = mPads.at(n);
+        if ( pad == padstack)
+            return true;
+    }
+    return false;
+}
+
 QPainterPath CPcbPlace::shape() const
 {
 	CPcbPlace* me = (CPcbPlace*)this;
 	QPainterPath p = me->outlineShape();
 	return p;
+}
+
+QPointF CPcbPlace::centre()
+{
+    QPainterPath path = shape();
+    QRectF bounds = path.boundingRect();
+    QPointF pt( bounds.x()+(bounds.width()/2), bounds.y()+(bounds.height()/2) );
+    return pt;
 }
 
 void CPcbPlace::paint(QPainter *painter, const QStyleOptionGraphicsItem* /* option */, QWidget* /* widget */)

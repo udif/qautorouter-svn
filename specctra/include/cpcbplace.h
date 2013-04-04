@@ -30,12 +30,14 @@ class CPcbPlace : public CSpecctraObject
 		int								pads();
 		CGPadstack*						pad(int idx);
 		CGPadstack*						pad(QString ref);
+        bool                            contains(CGSegment* padstack);
 		double							rotation();
 		QPainterPath&					outlineShape();
 		virtual QRectF					boundingRect() const;
 		virtual QPainterPath			shape() const;
 		virtual void					paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
 
+        QPointF                         centre();
 
         /* gEDA export methods */
         virtual QString					gedaObjectClass();

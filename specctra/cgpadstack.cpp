@@ -134,7 +134,7 @@ QStringList CGPadstack::layers()
 QPainterPath CGPadstack::shape() const
 {
 	QPainterPath ppath;
-#if 0
+#if 1
 	CGPadstack* me = (CGPadstack*)this;
 	for(int n=0; n < me->layers().count(); n++)
 	{

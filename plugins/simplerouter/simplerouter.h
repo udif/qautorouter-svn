@@ -68,7 +68,7 @@ class SimpleRouter : public QObject, public CPluginInterface
 		QStack<CPcbNet*>&			netStack()	{return mNetStack;}
 		QPointF						scenePt(QPoint gridPt, double gridRez);
 		QPoint						gridPt(QPointF scenePt, double gridRez);
-		QList<CAStarMarker>&		keepOutList(double gridRez);
+        QList<CAStarMarker>&		keepOutList(CGSegment* exclude1, CGSegment* exclude2, double gridRez);
 
 	private:
 		CPcb*						mPcb;

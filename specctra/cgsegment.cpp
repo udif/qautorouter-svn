@@ -183,3 +183,11 @@ void CGSegment::paint(QPainter *painter, const QStyleOptionGraphicsItem* /* opti
 void CGSegment::route()
 {
 }
+
+/// @return the shape as a polygon
+QPolygonF CGSegment::polygon()
+{
+    QPainterPath path = shape();
+    QPolygonF polygon = path.toFillPolygon();
+    return polygon;
+}
