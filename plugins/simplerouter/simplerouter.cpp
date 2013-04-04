@@ -198,13 +198,25 @@ void SimpleRouter::select()
 		stop();
 }
 
-/// Generate the keepout list
-QList<CAStarMarker>& SimpleRouter::keepOutList()
+/// Translate from a sceen point to a grid point suitable for A* search.
+/// Each A* grid point represents a rectangle of size gridRez.
+QPoint SimpleRouter::gridPt(QPointF scenePt, double gridRez)
+{
+	QPoint rc( (scenePt.x()*gridRez)-(gridRez/2), (scenePt.y()*gridRez)-(gridRez/2) );
+	return rc;
+}
+
+/// Generate the keepout list in A* grid coordinates
+QList<CAStarMarker>& SimpleRouter::keepOutList(double gridRez)
 {
 	mKeepOutList.clear();
-	/// populate keepout list in terms of A* grid resolution vs. barrier objects
-	/// on the PCB, starting with the boundaries.
+	// genrate the board outline in A* grid coorinates
 	QList<QPointF> polyBounds = pcb()->structure()->boundary()->path()->polygon();
+	for(int n=0; n < polyBounds.count(); n++)
+	{
+		mKeepOutList.append( gridPt(polyBounds[n],gridRez) );
+	}
+	// FIXME -- generate for the other stuff...
 	return mKeepOutList;
 }
 

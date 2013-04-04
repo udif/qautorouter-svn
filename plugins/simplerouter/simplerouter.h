@@ -12,6 +12,8 @@
 #include <QRectF>
 #include <QStack>
 #include <QMap>
+#include <QPoint>
+#include <QPointF>
 #include <cplugininterface.h>
 
 #include "castar.h"
@@ -62,14 +64,15 @@ class SimpleRouter : public QObject, public CPluginInterface
 
 		QStack<CPcbNet*>&			netStack()	{return mNetStack;}
 
-        QList<CAStarMarker>&        keepOutList();
+		QPoint						gridPt(QPointF scenePt, double gridRez);
+		QList<CAStarMarker>&		keepOutList(double gridRez);
 
 	private:
 		CPcb*						mPcb;
 		QDateTime					mStartTime;
 		tRunState					mState;
 		QStack<CPcbNet*>			mNetStack;						/** the current work stack */
-        QList<CAStarMarker>         mKeepOutList;
+		QList<CAStarMarker>         mKeepOutList;
 };
 
 #endif // SIMPLEROUTER_H
