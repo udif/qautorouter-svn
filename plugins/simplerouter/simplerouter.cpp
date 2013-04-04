@@ -39,7 +39,7 @@ QString SimpleRouter::title() const
   */
 QString SimpleRouter::version() const
 {
-	return "1.0";
+	return "0.2";
 }
 
 /**

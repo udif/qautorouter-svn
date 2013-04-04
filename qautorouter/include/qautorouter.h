@@ -17,18 +17,18 @@
 #include "cpcb.h"
 
 namespace Ui {
-    class QAutoRouter;
+	class QAutoRouter;
 	class preferences;
 	class layerpreferences;
 }
 
-#define VERSION_STRING	"V0.0.4"
+#define VERSION_STRING	"V0.0.5"
 
 class CPcb;
 class CPluginInterface;
 class QAutoRouter : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 	public:
 		QAutoRouter(QWidget *parent = 0);
 		~QAutoRouter();
@@ -61,9 +61,9 @@ class QAutoRouter : public QMainWindow
 		void					stop();
 		void					open();
 		bool					save();
-        bool					saveAs();
-        bool					exportAs();
-        void					zoomIn();
+		bool					saveAs();
+		bool					exportAs();
+		void					zoomIn();
 		void					zoomOut();
 		void					zoomFit();
 		void					about();
