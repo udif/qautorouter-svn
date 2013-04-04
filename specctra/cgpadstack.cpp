@@ -17,7 +17,7 @@ CGPadstack::CGPadstack(CPcbNet* net,CPcbPlace* place,QString pinRef, QObject* /*
 , mPlace(place)
 , mPinRef(pinRef)
 {
-    mSegmentType=CGSegment::Padstack;
+	mSegmentType=CGSegment::Padstack;
 	mGPadstacks.insert(unitRef(),this);
 }
 
@@ -107,10 +107,10 @@ CGPad* CGPadstack::pad(QString layer)
 QPointF CGPadstack::origin()
 {
 	QPointF pt;
-    QStringList layers = this->layers();
-    for(int n=0; n < layers.count(); n++)
+	QStringList layers = this->layers();
+	for(int n=0; n < layers.count(); n++)
 	{
-        CGPad* pPad = pad(layers.at(n));
+		CGPad* pPad = pad(layers.at(n));
 		pt = pPad->pos();
 	}
 	return pt;
@@ -147,16 +147,16 @@ QPainterPath CGPadstack::shape() const
 
 QRectF CGPadstack::boundingRect() const
 {
-    QRectF rc;
-    QPainterPath ppath;
-    CGPadstack* me = (CGPadstack*)this;
-    for(int n=0; n < me->layers().count(); n++)
-    {
-        CGPad* pPad = me->pad(me->layers().at(n));
-        ppath.addPath(pPad->shape());
-    }
-    rc = ppath.boundingRect();
-    return rc;
+	QRectF rc;
+	QPainterPath ppath;
+	CGPadstack* me = (CGPadstack*)this;
+	for(int n=0; n < me->layers().count(); n++)
+	{
+		CGPad* pPad = me->pad(me->layers().at(n));
+		ppath.addPath(pPad->shape());
+	}
+	rc = ppath.boundingRect();
+	return rc;
 }
 
 

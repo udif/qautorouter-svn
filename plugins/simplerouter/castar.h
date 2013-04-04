@@ -23,46 +23,45 @@ class CGPcb;
 class CAStarNode;
 class CAStar : public QObject
 {
-    /// @brief The A* algorithm
-    Q_OBJECT
+	/// @brief The A* algorithm
 	public:
 
-        CAStar();
-        CAStar( QList<CAStarMarker>& keepOut, QPoint startPt, QPoint goalPt );
-        CAStar(const CAStar& other);
-        ~CAStar();
+		CAStar();
+		CAStar( QList<CAStarMarker>& keepOut, QPoint startPt, QPoint goalPt );
+		CAStar(const CAStar& other);
+		virtual ~CAStar();
 
-        QList<CAStarNode>           path( QList<CAStarMarker>& keepOut, QPoint startPt, QPoint goalPt );
-        QList<CAStarNode>           path();
-        void                        setKeepOut(QList<CAStarMarker>& keepOut) {mKeepoutList=keepOut;}
-        void                        setStart(QPoint pt) {mStartPt=pt;}
-        void                        setGoal(QPoint pt) {mGoalPt=pt;}
-        QList<CAStarMarker>&        keepOutList() {return mKeepoutList;}
-        QPoint                      start() {return mStartPt;}
-        QPoint                      goal()  {return mGoalPt;}
+		QList<CAStarNode>           path( QList<CAStarMarker>& keepOut, QPoint startPt, QPoint goalPt );
+		QList<CAStarNode>           path();
+		void                        setKeepOut(QList<CAStarMarker>& keepOut) {mKeepoutList=keepOut;}
+		void                        setStart(QPoint pt) {mStartPt=pt;}
+		void                        setGoal(QPoint pt) {mGoalPt=pt;}
+		QList<CAStarMarker>&        keepOutList() {return mKeepoutList;}
+		QPoint                      start() {return mStartPt;}
+		QPoint                      goal()  {return mGoalPt;}
 
-    protected:
+	protected:
 
-        void                        clear();
-        bool                        isEmpty(QPoint pt);
-        void                        insort(QList<CAStarNode>& list,CAStarNode& node);
-        QList<CAStarNode>           childList(CAStarNode& node);
-        int                         nodeIndex(QList<CAStarNode>& list,QPoint pt);
-        void                        open(CAStarNode& node);
-        void                        close(CAStarNode& node);
-        double                      manhattanLength(QPoint a, QPoint b);
-        double                      adjacentCost(QPoint a, QPoint b);
-        double                      g(CAStarNode& node);
-        double                      h(CAStarNode& node);
-        double                      cost(CAStarNode& node);
+		void                        clear();
+		bool                        isEmpty(QPoint pt);
+		void                        insort(QList<CAStarNode>& list,CAStarNode& node);
+		QList<CAStarNode>           childList(CAStarNode& node);
+		int                         nodeIndex(QList<CAStarNode>& list,QPoint pt);
+		void                        open(CAStarNode& node);
+		void                        close(CAStarNode& node);
+		double                      manhattanLength(QPoint a, QPoint b);
+		double                      adjacentCost(QPoint a, QPoint b);
+		double                      g(CAStarNode node,CAStarNode parent);
+		double                      h(CAStarNode node);
+		double                      cost(CAStarNode node, CAStarNode parent);
 
 	private:
 
-        QList<CAStarMarker>         mKeepoutList;
-        QPoint                      mStartPt;
-        QPoint                      mGoalPt;
-        QList<CAStarNode>           mOpenList;
-        QList<CAStarNode>           mClosedList;
+		QList<CAStarMarker>         mKeepoutList;
+		QPoint                      mStartPt;
+		QPoint                      mGoalPt;
+		QList<CAStarNode>           mOpenList;
+		QList<CAStarNode>           mClosedList;
 };
 
 

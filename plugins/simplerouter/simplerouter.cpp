@@ -198,11 +198,19 @@ void SimpleRouter::select()
 		stop();
 }
 
+/// Translate from a grid point to a grid point suitable for A* search.
+/// Each A* grid point represents a rectangle of size gridRez.
+QPointF SimpleRouter::scenePt(QPoint gridPt, double gridRez)
+{
+	QPointF rc( ((double)gridPt.x()*gridRez), ((double)gridPt.y()*gridRez) );
+	return rc;
+}
+
 /// Translate from a sceen point to a grid point suitable for A* search.
 /// Each A* grid point represents a rectangle of size gridRez.
 QPoint SimpleRouter::gridPt(QPointF scenePt, double gridRez)
 {
-	QPoint rc( (scenePt.x()*gridRez)-(gridRez/2), (scenePt.y()*gridRez)-(gridRez/2) );
+	QPoint rc( (scenePt.x()/gridRez), (scenePt.y()/gridRez) );
 	return rc;
 }
 
@@ -220,6 +228,34 @@ QList<CAStarMarker>& SimpleRouter::keepOutList(double gridRez)
 	return mKeepOutList;
 }
 
+/// draw a single rat line
+void SimpleRouter::drawRatLine(CGSegment* seg1, CGSegment* seg2)
+{
+	QPainterPath painterPath;
+	painterPath.moveTo( seg1->origin() );
+	painterPath.lineTo( seg2->origin() );
+	CSpecctraObject::globalScene()->addPath(painterPath);
+}
+
+/// route a path from A* nodes
+void SimpleRouter::route( QList<CAStarNode>& path, CGSegment* seg1, CGSegment* seg2, double gridRez )
+{
+	// FIXME - make a CGWire follow the A* nodes...
+	// FIXME - for now just paint a line...
+	QPainterPath painterPath;
+	for(int n=0; n < path.count(); n++)
+	{
+		CAStarNode node = path[n];
+		QPointF pt = scenePt( node.pos(), gridRez );
+		printf( "node[%d,%d]\n",node.pos().x(),node.pos().y());
+		if ( n==0 )
+			painterPath.moveTo( pt );
+		else
+			painterPath.lineTo( pt );
+	}
+	CSpecctraObject::globalScene()->addPath(painterPath);
+}
+
 /// route some nets...
 void SimpleRouter::route()
 {
@@ -230,32 +266,18 @@ void SimpleRouter::route()
 		//selectNet(net,true);
 		for( int n=0; running() && n < padstacks.count()-1; n++)
 		{
-
 			CGPadstack* padstack1 = padstacks[n];
 			CGPadstack* padstack2 = padstacks[n+1];
 			double gridRez = net->width();
-
-#if 0
-			/// Begin seeking a path...
-			CAStarNo
-			QList<CAStarNode*> path = node.path();
-			// FIXME - make a CGWire follow the A* nodes...
-			QPainterPath painterPath;
-			for(int n=0; n < path.count(); n++)
-			{
-				CAStarNode* node = path[n];
-				printf( "node[%g,%g]\n",node->pos().x(),node->pos().y());
-				if ( n==0 )
-					painterPath.moveTo( node->pos() );
-				else
-					painterPath.lineTo( node->pos() );
-			}
-			CSpecctraObject::globalScene()->addPath(painterPath);
-#endif
+			CAStar astar( keepOutList(gridRez), gridPt(padstack1->origin(),gridRez), gridPt(padstack2->origin(),gridRez) ); // ?origin
+			QList<CAStarNode> path = astar.path();
+			//drawRatLine(padstack1,padstack2);
+			route(path,padstack1,padstack2,gridRez);
 			emit status(currentStatus());
 		}
 		selectNet(net,false);
 	}
+	setState(Idle);
 }
 
 /**

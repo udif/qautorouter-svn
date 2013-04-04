@@ -14,9 +14,11 @@
 #include <QMap>
 #include <QPoint>
 #include <QPointF>
+#include <QPainterPath>
 #include <cplugininterface.h>
 
 #include "castar.h"
+#include "castarnode.h"
 
 class CPcb;
 class CPcbNet;
@@ -61,9 +63,10 @@ class SimpleRouter : public QObject, public CPluginInterface
 		void						selectNet(CPcbNet* net,bool selected);
 		void						select();
 		void						route();
-
+		void						route( QList<CAStarNode>& path, CGSegment* seg1, CGSegment* seg2, double gridRez );
+		void						drawRatLine(CGSegment* seg1, CGSegment* seg2);
 		QStack<CPcbNet*>&			netStack()	{return mNetStack;}
-
+		QPointF						scenePt(QPoint gridPt, double gridRez);
 		QPoint						gridPt(QPointF scenePt, double gridRez);
 		QList<CAStarMarker>&		keepOutList(double gridRez);
 
@@ -72,7 +75,7 @@ class SimpleRouter : public QObject, public CPluginInterface
 		QDateTime					mStartTime;
 		tRunState					mState;
 		QStack<CPcbNet*>			mNetStack;						/** the current work stack */
-		QList<CAStarMarker>         mKeepOutList;
+		QList<CAStarMarker>			mKeepOutList;
 };
 
 #endif // SIMPLEROUTER_H
