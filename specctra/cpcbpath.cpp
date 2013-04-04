@@ -43,6 +43,17 @@ double CPcbPath::width()
 	return w;
 }
 
+/// fetch the path as a polgon
+QList<QPointF> CPcbPath::polygon()
+{
+	QList<QPointF> rc;
+	for(int n=2; n < properties().count(); n+=2)
+	{
+		rc.append(QPointF(properties().at(n).toDouble(),properties().at(n+1).toDouble()));
+	}
+	return rc;
+}
+
 /**
   * @return the polygon
   */
@@ -110,7 +121,7 @@ QPainterPath CPcbPath::circle(QPointF center,double radius)
   */
 QString CPcbPath::gedaObjectClass()
 {
-    return "ElementLine";
+	return "ElementLine";
 }
 
 /**
@@ -119,16 +130,16 @@ QString CPcbPath::gedaObjectClass()
   */
 QStringList CPcbPath::gedaProperties()
 {
-    QStringList rc;
-    if ( properties().count() >= 6 )
-    {
-        rc << properties().at(2);   /* X1 */
-        rc << properties().at(3);   /* X2 */
-        rc << properties().at(4);   /* X3 */
-        rc << properties().at(5);   /* X4 */
-        rc << properties().at(1);   /* Thickness */
-    }
-    return rc;
+	QStringList rc;
+	if ( properties().count() >= 6 )
+	{
+		rc << properties().at(2);   /* X1 */
+		rc << properties().at(3);   /* X2 */
+		rc << properties().at(4);   /* X3 */
+		rc << properties().at(5);   /* X4 */
+		rc << properties().at(1);   /* Thickness */
+	}
+	return rc;
 }
 
 /**
@@ -137,6 +148,6 @@ QStringList CPcbPath::gedaProperties()
   */
 QList<CSpecctraObject*>	CPcbPath::gedaChildren()
 {
-    QList<CSpecctraObject*> rc;
-    return rc;
+	QList<CSpecctraObject*> rc;
+	return rc;
 }

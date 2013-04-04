@@ -10,6 +10,7 @@
 #include <cpcbnet.h>
 #include <cpcbstructure.h>
 #include <cpcbboundary.h>
+#include <cpcbpath.h>
 #include <cutil.h>
 #include <cgsegment.h>
 #include <cgwire.h>
@@ -200,10 +201,11 @@ void SimpleRouter::select()
 /// Generate the keepout list
 QList<CAStarMarker>& SimpleRouter::keepOutList()
 {
-    mKeepOutList.clear();
-    /// populate keepout list in terms of A* grid resolution vs. barrier objects
-    /// on the PCB, starting with the boundaries.
-    return mKeepOutList;
+	mKeepOutList.clear();
+	/// populate keepout list in terms of A* grid resolution vs. barrier objects
+	/// on the PCB, starting with the boundaries.
+	QList<QPointF> polyBounds = pcb()->structure()->boundary()->path()->polygon();
+	return mKeepOutList;
 }
 
 /// route some nets...
@@ -213,7 +215,7 @@ void SimpleRouter::route()
 	{
 		CPcbNet* net = netStack().pop();
 		QList<CGPadstack*>& padstacks =	net->padstacksRef();
-        //selectNet(net,true);
+		//selectNet(net,true);
 		for( int n=0; running() && n < padstacks.count()-1; n++)
 		{
 
@@ -223,20 +225,20 @@ void SimpleRouter::route()
 
 #if 0
 			/// Begin seeking a path...
-            CAStarNo
+			CAStarNo
 			QList<CAStarNode*> path = node.path();
 			// FIXME - make a CGWire follow the A* nodes...
-            QPainterPath painterPath;
-            for(int n=0; n < path.count(); n++)
-            {
-                CAStarNode* node = path[n];
-                printf( "node[%g,%g]\n",node->pos().x(),node->pos().y());
-                if ( n==0 )
-                    painterPath.moveTo( node->pos() );
-                else
-                    painterPath.lineTo( node->pos() );
-            }
-            CSpecctraObject::globalScene()->addPath(painterPath);
+			QPainterPath painterPath;
+			for(int n=0; n < path.count(); n++)
+			{
+				CAStarNode* node = path[n];
+				printf( "node[%g,%g]\n",node->pos().x(),node->pos().y());
+				if ( n==0 )
+					painterPath.moveTo( node->pos() );
+				else
+					painterPath.lineTo( node->pos() );
+			}
+			CSpecctraObject::globalScene()->addPath(painterPath);
 #endif
 			emit status(currentStatus());
 		}
