@@ -22,7 +22,6 @@
 
 #include <QPolygonF>
 #include <QVector>
-#include <QEventLoop>
 
 /**
   * @return plugin type
@@ -209,27 +208,23 @@ void SimpleRouter::select()
 /// spy on what A* is doing for debugging, open nodes
 void SimpleRouter::slotOpen(QPoint pt)
 {
-	QEventLoop loop;
 	QPoint gridTopLeft( pt.x()-(1), pt.y()-(1) );
 	QPoint gridBottomRight( pt.x()+(1), pt.y()+(1) );
 	QPointF sceneTopLeft = scenePt( gridTopLeft );
 	QPointF sceneBottomRight = scenePt( gridBottomRight );
 	QRectF sceneRect( sceneTopLeft, sceneBottomRight );
 	CSpecctraObject::globalScene()->addEllipse(sceneRect,QPen(Qt::green));
-	loop.processEvents();
 }
 
 /// spy on what A* is doing for debugging, closed nodes
 void SimpleRouter::slotClose(QPoint pt)
 {
-	QEventLoop loop;
 	QPoint gridTopLeft( pt.x()-(1), pt.y()-(1) );
 	QPoint gridBottomRight( pt.x()+(1), pt.y()+(1) );
 	QPointF sceneTopLeft = scenePt( gridTopLeft );
 	QPointF sceneBottomRight = scenePt( gridBottomRight );
 	QRectF sceneRect( sceneTopLeft, sceneBottomRight );
 	CSpecctraObject::globalScene()->addEllipse(sceneRect,QPen(Qt::red));
-	loop.processEvents();
 }
 
 /// Translate from a grid point to a grid point suitable for A* search.
@@ -309,8 +304,20 @@ QList<CAStarMarker>& SimpleRouter::keepOutList(CGSegment* exclude1, CGSegment* e
 		QPoint pt2 = gridPt(polyBounds[n+1]);
 		gridPlotLine(mKeepOutList,pt1,pt2);
 	}
-#if 1
-	// generate keep-outs for the other shapes...
+#if 0
+	// FIXME - have each CSpecctraObject to maintain it's own keep-out shape (or, let's more correctly call it it's "copper shape"
+	// FIXME - such that only things that are copper produce keep-outs (we are getting hung up here on silk screen shapes and all that crap)
+	// FIXME - in this way we don't have to repeatedly figure that out at this stage and we can simply
+	// FIXME - call on the root CSpecctraObject to prodddduce a keep-out mask for each layer.
+	// FIXME - Will need a mechanism for "un-masking" the source and destinations such that A* can penetrate
+	// FIXME the target footprint to get to the center point of it.
+
+	// FIXME - Provide a means of obtaining a complete pad-list as shapes.
+	// FIXME - provide a means of obtaining a complete copper shape list per layer.(pads + zones + routed wires)
+	// FIXME - To simplify the implementation, can we query layers? Find the copper layers, and then query the shapes on those layers?
+
+
+	// generate keep-outs for the other shapes (for initial testing/experimentation only)...
 	if ( pcb() != NULL && pcb()->placement() != NULL )
 	{
 		for(int nPlacement=0; nPlacement < pcb()->placement()->places();nPlacement++)
@@ -370,11 +377,16 @@ void SimpleRouter::route()
 		CPcbNet* net = netStack().pop();
 		QList<CGPadstack*>& padstacks =	net->padstacksRef();
 		//selectNet(net,true);
+
+		// FIXME - Some kind of orientation problem with the padstacks, not getting the translated shape coordinates?
+		// FIXME - Or is it an error translating between A* coordinates and scene coordinates?
+
 		for( int n=0; running() && n < padstacks.count()-1; n++)
 		{
 			CGPadstack* padstack1 = padstacks[n];
 			CGPadstack* padstack2 = padstacks[n+1];
-			mGridRez = net->width();
+			//mGridRez = net->width()/4;  // A* resolution maybe should be saller than the trace width, probably / 4 ?
+			mGridRez = net->width();  // The resolution to use for the A* search.
 			CAStar astar( keepOutList(padstack1,padstack2),
 						  gridPt(padstack1->place()->centre()),
 						  gridPt(padstack2->place()->centre()) );

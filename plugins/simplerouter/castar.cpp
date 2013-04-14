@@ -5,6 +5,8 @@
 #include "castar.h"
 #include "castarnode.h"
 
+#include <QEventLoop>
+
 #define inherited QObject
 
 /// Construct an empty A* solver instance.
@@ -61,12 +63,19 @@ QList<CAStarNode> CAStar::path(QList<CAStarMarker>& keepOut, QPoint startPt, QPo
 /// seek the path.
 QList<CAStarNode> CAStar::path()
 {
+	QEventLoop loop;
+	int loopcounter=0;
 	int idx;
 	QList<CAStarNode> rc;
 	CAStarNode node(mStartPt);
 	insort(mOpenList,node);
 	while(!mOpenList.isEmpty() && (node = mOpenList.takeFirst()) != mGoalPt )
 	{
+		if (++loopcounter >= 10)
+		{
+			loop.processEvents();
+			loopcounter=0;
+		}
 		QList<CAStarNode> children = childList(node);
 		for(int n=0; n < children.count(); n++)
 		{
@@ -195,7 +204,7 @@ double CAStar::adjacentCost(QPoint a, QPoint b)
 {
 	double diffX = abs(a.x()-b.x());
 	double diffY = abs(a.y()-b.y());
-	double rc = ( diffX && diffY ) ? 14 : 10;
+	double rc = ( diffX && diffY ) ? 14.14 : 10;
 	return rc;
 }
 
