@@ -23,6 +23,7 @@ class CGPcb;
 class CAStarNode;
 class CAStar : public QObject
 {
+	Q_OBJECT
 	/// @brief The A* algorithm
 	public:
 
@@ -39,6 +40,10 @@ class CAStar : public QObject
 		QList<CAStarMarker>&        keepOutList() {return mKeepoutList;}
 		QPoint                      start() {return mStartPt;}
 		QPoint                      goal()  {return mGoalPt;}
+
+	signals:
+		void						signalOpen(QPoint pt);
+		void						signalClose(QPoint pt);
 
 	protected:
 

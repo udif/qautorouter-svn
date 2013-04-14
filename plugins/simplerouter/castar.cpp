@@ -95,10 +95,10 @@ QList<CAStarNode> CAStar::path()
 			if ( cIdx >= 0 )
 				mClosedList.takeAt(cIdx);
 			// add child to open list
-			insort(mOpenList,child);
+			open(child);
 
 		}
-		insort(mClosedList,node);
+		close(node);
 	}
 	// follow parent nodes from goal back to start
 	do
@@ -168,25 +168,15 @@ int CAStar::nodeIndex(QList<CAStarNode>& list,QPoint pt)
 /// Transfer a node to the open list.
 void CAStar::open(CAStarNode& node)
 {
-	int idx;
-	if ( (idx=mClosedList.indexOf(node))>= 0 )
-		mClosedList.takeAt(idx);
-	if ( (idx=mOpenList.indexOf(node))>= 0 )
-		mOpenList.replace(idx,node);
-	else
-		insort(mOpenList,node);
+	insort(mOpenList,node);
+	emit signalOpen(node.pos());
 }
 
 /// Transfer a node to the closed list.
 void CAStar::close(CAStarNode& node)
 {
-	int idx;
-	if ( (idx=mOpenList.indexOf(node))>= 0 )
-		mOpenList.takeAt(idx);
-	if ( (idx=mClosedList.indexOf(node))>= 0 )
-		mClosedList.replace(idx,node);
-	else
-		insort(mClosedList,node);
+	insort(mClosedList,node);
+	emit signalClose(node.pos());
 }
 
 /// Returns the sum of the absolute values of x() and y(), traditionally known as the "Manhattan length"

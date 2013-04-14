@@ -22,6 +22,7 @@
 
 #include <QPolygonF>
 #include <QVector>
+#include <QEventLoop>
 
 /**
   * @return plugin type
@@ -151,6 +152,7 @@ bool SimpleRouter::start(CPcb* pcb)
 	mPcb = pcb;
 	setState(Idle);
 	mStartTime = QDateTime::currentDateTime();
+	mGridRez=0;
 	if ( mPcb != NULL && mPcb->network() != NULL )
 	{
 		setState(Selecting);
@@ -203,36 +205,109 @@ void SimpleRouter::select()
 		stop();
 }
 
-/// Translate from a grid point to a grid point suitable for A* search.
-/// Each A* grid point represents a rectangle of size gridRez.
-QPointF SimpleRouter::scenePt(QPoint gridPt, double gridRez)
+
+/// spy on what A* is doing for debugging, open nodes
+void SimpleRouter::slotOpen(QPoint pt)
 {
-	QPointF rc( ((double)gridPt.x()*gridRez), ((double)gridPt.y()*gridRez) );
+	QEventLoop loop;
+	QPoint gridTopLeft( pt.x()-(1), pt.y()-(1) );
+	QPoint gridBottomRight( pt.x()+(1), pt.y()+(1) );
+	QPointF sceneTopLeft = scenePt( gridTopLeft );
+	QPointF sceneBottomRight = scenePt( gridBottomRight );
+	QRectF sceneRect( sceneTopLeft, sceneBottomRight );
+	CSpecctraObject::globalScene()->addEllipse(sceneRect,QPen(Qt::green));
+	loop.processEvents();
+}
+
+/// spy on what A* is doing for debugging, closed nodes
+void SimpleRouter::slotClose(QPoint pt)
+{
+	QEventLoop loop;
+	QPoint gridTopLeft( pt.x()-(1), pt.y()-(1) );
+	QPoint gridBottomRight( pt.x()+(1), pt.y()+(1) );
+	QPointF sceneTopLeft = scenePt( gridTopLeft );
+	QPointF sceneBottomRight = scenePt( gridBottomRight );
+	QRectF sceneRect( sceneTopLeft, sceneBottomRight );
+	CSpecctraObject::globalScene()->addEllipse(sceneRect,QPen(Qt::red));
+	loop.processEvents();
+}
+
+/// Translate from a grid point to a grid point suitable for A* search.
+/// Each A* grid point represents a rectangle of size mGridRez.
+QPointF SimpleRouter::scenePt(QPoint gridPt)
+{
+	QPointF rc( ((double)gridPt.x()*mGridRez), ((double)gridPt.y()*mGridRez) );
 	return rc;
 }
 
 /// Translate from a sceen point to a grid point suitable for A* search.
-/// Each A* grid point represents a rectangle of size gridRez.
-QPoint SimpleRouter::gridPt(QPointF scenePt, double gridRez)
+/// Each A* grid point represents a rectangle of size mGridRez.
+QPoint SimpleRouter::gridPt(QPointF scenePt)
 {
-	QPoint rc( (scenePt.x()/gridRez), (scenePt.y()/gridRez) );
+	QPoint rc( (scenePt.x()/mGridRez), (scenePt.y()/mGridRez) );
 	return rc;
+}
+
+/// Plot a point on the grid
+void SimpleRouter::gridPlotPt(QList<CAStarMarker>& grid, QPoint gridPt)
+{
+	grid.append(gridPt);
+}
+
+/// Use Bresenham's line algorithm to plot a line on the grid between two points
+void SimpleRouter::gridPlotLine(QList<CAStarMarker>& grid, QPoint gridPt1,QPoint gridPt2)
+{
+	double x1 = gridPt1.x();
+	double y1 = gridPt1.y();
+	double x2 = gridPt2.x();
+	double y2 = gridPt2.y();
+	bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
+	if(steep)
+	{
+		qSwap(x1, y1);
+		qSwap(x2, y2);
+	}
+	if(x1 > x2)
+	{
+		qSwap(x1, x2);
+		qSwap(y1, y2);
+	}
+	double dx = x2 - x1;
+	double dy = fabs(y2 - y1);
+	double error = dx / 2.0f;
+	double ystep = (y1 < y2) ? 1 : -1;
+	int y = (int)y1;
+	int maxX = (int)x2;
+	for(int x=(int)x1; x<maxX; x++)
+	{
+		if(steep)
+			gridPlotPt(grid,QPoint(y,x));
+		else
+			gridPlotPt(grid,QPoint(x,y));
+		if( (error -= dy) < 0)
+		{
+			y += ystep;
+			error += dx;
+		}
+	}
 }
 
 /// Generate the keepout list in A* grid coordinates, excluding the wire being routed.
 /// @param exclude1 One end point of the wire being routed.
 /// @param exclude2 One end point of the wire being routed.
-/// @param gridRez The current grid rezolution.
+/// @param mGridRez The current grid rezolution.
 /// @return a reference to a marker array in A* grid coordinates.
-QList<CAStarMarker>& SimpleRouter::keepOutList(CGSegment* exclude1, CGSegment* exclude2, double gridRez)
+QList<CAStarMarker>& SimpleRouter::keepOutList(CGSegment* exclude1, CGSegment* exclude2)
 {
 	mKeepOutList.clear();
 	// genrate the board outline in A* grid coorinates
 	QList<QPointF> polyBounds = pcb()->structure()->boundary()->path()->polygon();
-	for(int n=0; n < polyBounds.count(); n++)
+	for(int n=0; n < polyBounds.count()-1; n++)
 	{
-		/** FIXME - render a grid-coordinate poly-line for each sceen-coordinate polyline */
-		mKeepOutList.append( gridPt(polyBounds[n],gridRez) );
+		// render a grid-coordinate poly-line for each sceen-coordinate polyline.
+		QPoint pt1 = gridPt(polyBounds[n]);
+		QPoint pt2 = gridPt(polyBounds[n+1]);
+		gridPlotLine(mKeepOutList,pt1,pt2);
 	}
 #if 1
 	// generate keep-outs for the other shapes...
@@ -245,12 +320,13 @@ QList<CAStarMarker>& SimpleRouter::keepOutList(CGSegment* exclude1, CGSegment* e
 			{
 				QPainterPath shape = place->shape();
 				QPolygonF polygon = shape.toFillPolygon();
-				for(int n=0;n<polygon.size();n++)
+				for(int n=0;n<polygon.size()-1;n++)
 				{
-					/** FIXME - render a grid-coordinate poly-line for each sceen-coordinate polyline */
-					mKeepOutList.append( gridPt(polygon[n],gridRez) );
+					// render a grid-coordinate poly-line for each sceen-coordinate polyline.
+					QPoint pt1 = gridPt(polygon[n]);
+					QPoint pt2 = gridPt(polygon[n+1]);
+					gridPlotLine(mKeepOutList,pt1,pt2);
 				}
-
 			}
 		}
 	}
@@ -268,7 +344,7 @@ void SimpleRouter::drawRatLine(CGSegment* seg1, CGSegment* seg2)
 }
 
 /// route a path from A* nodes
-void SimpleRouter::route( QList<CAStarNode>& path, CGSegment* seg1, CGSegment* seg2, double gridRez )
+void SimpleRouter::route( QList<CAStarNode>& path, CGSegment* seg1, CGSegment* seg2)
 {
 	// FIXME - make a CGWire follow the A* nodes...
 	// FIXME - for now just paint a line...
@@ -276,7 +352,7 @@ void SimpleRouter::route( QList<CAStarNode>& path, CGSegment* seg1, CGSegment* s
 	for(int n=0; n < path.count(); n++)
 	{
 		CAStarNode node = path[n];
-		QPointF pt = scenePt( node.pos(), gridRez );
+		QPointF pt = scenePt( node.pos());
 		printf( "node[%d,%d]\n",node.pos().x(),node.pos().y());
 		if ( n==0 )
 			painterPath.moveTo( pt );
@@ -298,13 +374,15 @@ void SimpleRouter::route()
 		{
 			CGPadstack* padstack1 = padstacks[n];
 			CGPadstack* padstack2 = padstacks[n+1];
-			double gridRez = net->width();
-			CAStar astar( keepOutList(padstack1,padstack2,gridRez),
-						  gridPt(padstack1->place()->centre(),gridRez),
-						  gridPt(padstack2->place()->centre(),gridRez) );
+			mGridRez = net->width();
+			CAStar astar( keepOutList(padstack1,padstack2),
+						  gridPt(padstack1->place()->centre()),
+						  gridPt(padstack2->place()->centre()) );
+			QObject::connect(&astar,SIGNAL(signalOpen(QPoint)),this,SLOT(slotOpen(QPoint)));
+			QObject::connect(&astar,SIGNAL(signalClose(QPoint)),this,SLOT(slotClose(QPoint)));
 			QList<CAStarNode> path = astar.path();
 			//drawRatLine(padstack1,padstack2);
-			route(path,padstack1,padstack2,gridRez);
+			route(path,padstack1,padstack2);
 			emit status(currentStatus());
 		}
 		selectNet(net,false);
