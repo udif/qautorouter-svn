@@ -231,37 +231,39 @@ QList<CAStarMarker>& SimpleRouter::keepOutList(CGSegment* exclude1, CGSegment* e
 	QList<QPointF> polyBounds = pcb()->structure()->boundary()->path()->polygon();
 	for(int n=0; n < polyBounds.count(); n++)
 	{
+		/** FIXME - render a grid-coordinate poly-line for each sceen-coordinate polyline */
 		mKeepOutList.append( gridPt(polyBounds[n],gridRez) );
 	}
 #if 1
-    // generate keep-outs for the other shapes...
-    if ( pcb() != NULL && pcb()->placement() != NULL )
-    {
-        for(int nPlacement=0; nPlacement < pcb()->placement()->places();nPlacement++)
-        {
-            CPcbPlace* place = pcb()->placement()->place(nPlacement);
-            if ( !place->contains(exclude1) && !place->contains(exclude2) )
-            {
-                QPainterPath shape = place->shape();
-                QPolygonF polygon = shape.toFillPolygon();
-                for(int n=0;n<polygon.size();n++)
-                {
-                    mKeepOutList.append( gridPt(polygon[n],gridRez) );
-                }
+	// generate keep-outs for the other shapes...
+	if ( pcb() != NULL && pcb()->placement() != NULL )
+	{
+		for(int nPlacement=0; nPlacement < pcb()->placement()->places();nPlacement++)
+		{
+			CPcbPlace* place = pcb()->placement()->place(nPlacement);
+			if ( !place->contains(exclude1) && !place->contains(exclude2) )
+			{
+				QPainterPath shape = place->shape();
+				QPolygonF polygon = shape.toFillPolygon();
+				for(int n=0;n<polygon.size();n++)
+				{
+					/** FIXME - render a grid-coordinate poly-line for each sceen-coordinate polyline */
+					mKeepOutList.append( gridPt(polygon[n],gridRez) );
+				}
 
-            }
-        }
-    }
+			}
+		}
+	}
 #endif
-    return mKeepOutList;
+	return mKeepOutList;
 }
 
 /// draw a single rat line
 void SimpleRouter::drawRatLine(CGSegment* seg1, CGSegment* seg2)
 {
 	QPainterPath painterPath;
-    painterPath.moveTo( seg1->pos() );
-    painterPath.lineTo( seg2->pos() );
+	painterPath.moveTo( seg1->pos() );
+	painterPath.lineTo( seg2->pos() );
 	CSpecctraObject::globalScene()->addPath(painterPath);
 }
 
@@ -287,7 +289,7 @@ void SimpleRouter::route( QList<CAStarNode>& path, CGSegment* seg1, CGSegment* s
 /// route some nets...
 void SimpleRouter::route()
 {
-    if( netStack().count() )
+	if( netStack().count() )
 	{
 		CPcbNet* net = netStack().pop();
 		QList<CGPadstack*>& padstacks =	net->padstacksRef();
@@ -297,9 +299,9 @@ void SimpleRouter::route()
 			CGPadstack* padstack1 = padstacks[n];
 			CGPadstack* padstack2 = padstacks[n+1];
 			double gridRez = net->width();
-            CAStar astar( keepOutList(padstack1,padstack2,gridRez),
-                          gridPt(padstack1->place()->centre(),gridRez),
-                          gridPt(padstack2->place()->centre(),gridRez) );
+			CAStar astar( keepOutList(padstack1,padstack2,gridRez),
+						  gridPt(padstack1->place()->centre(),gridRez),
+						  gridPt(padstack2->place()->centre(),gridRez) );
 			QList<CAStarNode> path = astar.path();
 			//drawRatLine(padstack1,padstack2);
 			route(path,padstack1,padstack2,gridRez);
@@ -307,10 +309,10 @@ void SimpleRouter::route()
 		}
 		selectNet(net,false);
 	}
-    else
-    {
-        setState(Idle);
-    }
+	else
+	{
+		setState(Idle);
+	}
 }
 
 /**
@@ -335,8 +337,8 @@ bool SimpleRouter::exec()
 			break;
 		case Routing:
 			route();
-            //if ( running() )
-            //	setState(Selecting);
+			//if ( running() )
+			//	setState(Selecting);
 			break;
 	}
 	return rc;
