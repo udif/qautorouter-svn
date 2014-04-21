@@ -434,5 +434,4 @@ bool SimpleRouter::exec()
 	return rc;
 }
 
-Q_EXPORT_PLUGIN2(simplerouter, SimpleRouter);
 

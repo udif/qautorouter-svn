@@ -22,7 +22,7 @@ namespace Ui {
 	class layerpreferences;
 }
 
-#define VERSION_STRING	"V0.0.5"
+#define VERSION_STRING	"V0.0.6"
 
 class CPcb;
 class CPluginInterface;

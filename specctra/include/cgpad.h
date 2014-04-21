@@ -18,6 +18,7 @@ class CGPad : public QObject, public QGraphicsItem
 	Q_OBJECT
 	public:
 		explicit CGPad(CGPadstack* padstack, QPainterPath shape, QString layer, QObject *parent = 0);
+        virtual ~CGPad();
 
 		CGPadstack*					padstack() {return mPadstack;}
 		CPcb*						pcb();

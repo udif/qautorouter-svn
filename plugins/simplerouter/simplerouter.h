@@ -5,7 +5,6 @@
 #ifndef SIMPLEROUTER_H
 #define SIMPLEROUTER_H
 
-#include <QObject>
 #include <QString>
 #include <QDateTime>
 #include <QList>
@@ -25,8 +24,8 @@ class CPcbNet;
 class CGSegment;
 class SimpleRouter : public QObject, public CPluginInterface
  {
-	Q_OBJECT
-	Q_INTERFACES(CPluginInterface)
+    Q_OBJECT
+    Q_INTERFACES(CPluginInterface)
 
 	public:
 		friend class CSegmentState;

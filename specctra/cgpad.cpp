@@ -26,6 +26,10 @@ CGPad::CGPad(CGPadstack* padstack, QPainterPath shape, QString layer, QObject *p
 	setOpacity(0.45);
 }
 
+CGPad::~CGPad()
+{
+}
+
 /**
   * @brief convinience function to get the root pcb pointer.
   */

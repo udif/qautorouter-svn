@@ -226,7 +226,7 @@ void QAutoRouter::about()
 													"(c) 2011 Pike Aerospace Research Corporation\n"
 													"\n"
 													"Mike Sharkey <mike@pikeaero.com>\n"
-													"http://8bit.zapto.org\n"
+                                                    "http://qautorouter.sourceforge.net\n"
 													"\n"
 													"This program is free software; you can redistribute it and/or modify\n"
 													"it under the terms of the GNU General Public License as published\n"

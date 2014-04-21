@@ -7,6 +7,8 @@
 
 #include <QtPlugin>
 
+#define CPluginInterface_iid "org.qt-project.QAutoRouter.Plugins.CPluginInterface"
+
 class CPcb;
 class CPluginInterface
 {
@@ -33,8 +35,7 @@ class CPluginInterface
 		virtual QString				elapsed()=0;					/** elapsed time in seconds */
 };
 
-
-Q_DECLARE_INTERFACE(CPluginInterface, "8bit.zapto.org.CAutoRouter.CPluginInterface/1.0")
+Q_DECLARE_INTERFACE(CPluginInterface, CPluginInterface_iid)
 
 #endif  // INTERFACES_H
 

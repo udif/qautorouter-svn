@@ -370,10 +370,10 @@ void CSpecctraObject::dump(int lvl)
 {
 	for(int n=0; n < lvl;n++)
 		printf("+");
-	printf("[%s] ", objectClass().toAscii().data());
+    printf("[%s] ", objectClass().toLocal8Bit().data());
 	for(int n=0; n < properties().count(); n++)
 	{
-		printf("%s,",properties().at(n).toAscii().data());
+        printf("%s,",properties().at(n).toLocal8Bit().data());
 	}
 	printf("\n");
 	for(int n=0; n < children().count(); n++)

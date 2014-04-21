@@ -866,7 +866,7 @@ bool QAutoRouter::saveAs()
             }
             if ( file.open(QIODevice::ReadWrite|QIODevice::Truncate))
             {
-                file.write(pcb()->toText(0).toAscii());
+                file.write(pcb()->toText(0).toLocal8Bit());
                 file.close();
                 return true;
             }
@@ -900,9 +900,9 @@ bool QAutoRouter::exportAs()
             }
             if ( file.open(QIODevice::ReadWrite|QIODevice::Truncate))
             {
-                file.write(gedaHeader().toAscii());
-                file.write(pcb()->toGeda(0).toAscii());
-                file.write(gedaFooter().toAscii());
+                file.write(gedaHeader().toLocal8Bit());
+                file.write(pcb()->toGeda(0).toLocal8Bit());
+                file.write(gedaFooter().toLocal8Bit());
                 file.close();
                 return true;
             }

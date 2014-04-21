@@ -266,7 +266,7 @@ void CPcbNet::dumpLength()
 	{
 		QPointF pt = padstack(n)->origin() - padstack(0)->origin();
 		double len = pt.manhattanLength();
-		printf( "%s %g+%g\t%g\n", padstack(n)->unitRef().toAscii().data(), pt.x(),pt.y(), len);
+        printf( "%s %g+%g\t%g\n", padstack(n)->unitRef().toLocal8Bit().data(), pt.x(),pt.y(), len);
 	}
 }
 

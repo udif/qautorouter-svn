@@ -2,7 +2,7 @@
 * Copyright (C) Pike Aerospace Research Corporation                            *
 * Author: Mike Sharkey <mike@pikeaero.com>                                     *
 *******************************************************************************/
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <QString>
 #include "qautorouter.h"
 #include "cspecctrareader.h"
