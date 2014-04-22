@@ -81,9 +81,9 @@ bool QAutoRouter::loadPlugin(QString filename,QString& errorString)
 			QObject* plugin = mPluginLoader.instance();
 			if ( plugin != NULL )
 			{
-				CPluginInterface *iPlugin = qobject_cast<CPluginInterface *>(plugin);
-				 if (iPlugin)
-				{
+                CPluginInterface *iPlugin = qobject_cast<CPluginInterface *>(plugin);
+                if (iPlugin)
+                {
 					bool inTree=false;
 					for (int n = 0; n < preferences->pluginTree->topLevelItemCount(); ++n) {
 						QTreeWidgetItem* item = preferences->pluginTree->topLevelItem(n);
@@ -114,7 +114,7 @@ bool QAutoRouter::loadPlugin(QString filename,QString& errorString)
 						QTreeWidgetItem* pluginVersion = new QTreeWidgetItem(pluginItem);
 						pluginVersion->setText(0, tr("Version: ")+iPlugin->version());
 
-						/** creadits */
+                        /** credits */
 						QTreeWidgetItem* pluginCredits = new QTreeWidgetItem(pluginItem);
 						pluginCredits->setText(0, tr( "Credits..." ));
 						for(int n=0; n < iPlugin->credits().count(); n++)
