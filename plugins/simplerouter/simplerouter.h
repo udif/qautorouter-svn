@@ -25,6 +25,7 @@ class CGSegment;
 class SimpleRouter : public QObject, public CPluginInterface
  {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "com.pikeaero.QAutoRouter.Plugins.CPluginInterface" FILE "simplerouter.json")
     Q_INTERFACES(CPluginInterface)
 
 	public:

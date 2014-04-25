@@ -7,12 +7,12 @@
 
 #include <QtPlugin>
 
-#define CPluginInterface_iid "org.qt-project.QAutoRouter.Plugins.CPluginInterface"
+#define CPluginInterface_iid "com.pikeaero.QAutoRouter.Plugins.CPluginInterface"
 
 class CPcb;
 class CPluginInterface
 {
-	public:
+    public:
 		virtual ~CPluginInterface() {}
 
 		typedef enum {
