@@ -20,7 +20,9 @@ class CGWire : public CGSegment
 		CGWire(CPcbNet *net);
 		virtual ~CGWire();
 
-		virtual CPcbNet*			net();
+        virtual bool				isA(CGSegment::tSegmentType t) {t==Wire || CGSegment::isA(t);}
+
+        virtual CPcbNet*			net();
 
         virtual bool				insertBreak(QPointF pt,CGSegment::tSegmentType style);
 

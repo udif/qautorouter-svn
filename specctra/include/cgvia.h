@@ -10,8 +10,7 @@
 #include <QString>
 #include <QGraphicsItem>
 #include <QMap>
-
-#include "cgpadstack.h"
+#include <cgpadstack.h>
 
 class CPcbNet;
 class CGVia : public CGPadstack
@@ -21,7 +20,7 @@ class CGVia : public CGPadstack
 		CGVia(CPcbNet* net);
 		virtual ~CGVia();
 
-        virtual bool				isA(CGSegment::tSegmentType t) {return t==mSegmentType || CGPadstack::isA(t);}
+        virtual bool				isA(CGSegment::tSegmentType t) {t==Via || CGPadstack::isA(t);}
 
 		virtual void				route();
 

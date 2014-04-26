@@ -2,8 +2,8 @@
 * Copyright (C) Pike Aerospace Research Corporation                            *
 * Author: Mike Sharkey <mike@pikeaero.com>                                     *
 *******************************************************************************/
-#ifndef CGSEGMENT_H
-#define CGSEGMENT_H
+#ifndef CGSEGMENTROUTE_H
+#define CGSEGMENTROUTE_H
 
 #include <QObject>
 #include <QPainterPath>
@@ -14,21 +14,22 @@
 class CPcb;
 class CPcbNet;
 class CPcbLayer;
-class CGSegment : public QObject, public QGraphicsItem
+class CGSegment;
+class CGSegmentRoute : public QObject
 {
 	Q_OBJECT
 	public:
 
-        typedef enum
-        {
+		typedef enum
+		{
             Segment=0,
-            Padstack,
-            Wire,
-            Via
+			Padstack,
+			Wire,
+			Via
         } tSegmentType;
 
-		CGSegment(CPcbNet* net);
-		virtual ~CGSegment();
+        CGSegmentRoute(CPcbNet* net);
+        virtual ~CGSegment();
 
         virtual tSegmentType		segmentType() {return mSegmentType;}
         virtual bool				isA(CGSegment::tSegmentType t) {return t==mSegmentType || t==CGSegment::Segment;}
@@ -94,4 +95,4 @@ public slots:
         double                      mCost;
 };
 
-#endif // CGSEGMENT_H
+#endif // CGSEGMENTROUTE_H
