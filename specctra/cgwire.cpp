@@ -12,7 +12,6 @@
 CGWire::CGWire(CPcbNet* net)
 : inherited(net)
 {
-    mSegmentType=CGSegment::Wire;
 }
 
 CGWire::~CGWire()
@@ -41,7 +40,7 @@ QPainterPath CGWire::shape() const
 /**
   * @brief break the wire into another segment at point
   */
-bool CGWire::insertBreak(QPointF /* pt */,CGSegment::tSegmentType style)
+bool CGWire::insertBreak(QPointF /* pt */,CGSegment::Segment_t style)
 {
 	bool rc=false;
 	CGSegment* seg=NULL;

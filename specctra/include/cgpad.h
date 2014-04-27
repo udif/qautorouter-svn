@@ -20,7 +20,7 @@ class CGPad : public QObject, public QGraphicsItem
 		explicit CGPad(CGPadstack* padstack, QPainterPath shape, QString layer, QObject *parent = 0);
         virtual ~CGPad();
 
-		CGPadstack*					padstack() {return mPadstack;}
+        CGPadstack*					padstack() {return mPadstack;}
 		CPcb*						pcb();
 		QString&					layer() {return mLayer;}
 		QString						pinRef();

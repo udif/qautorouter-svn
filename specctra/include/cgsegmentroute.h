@@ -10,87 +10,110 @@
 #include <QGraphicsItem>
 #include <QPolygonF>
 #include <QPointF>
+#include <QList>
 
 class CPcb;
 class CPcbNet;
 class CPcbLayer;
 class CGSegment;
+
+class CRouteState
+{
+    public:
+        CRouteState()
+        : grid(1.0)
+        , startPt(NULL)
+        , goalPt(NULL)
+        {}
+        ~CRouteState()
+        {
+            while(openList.count()>0)   delete openList.takeLast();
+            while(closedList.count()>0) delete closedList.takeLast();
+            while(result.count()>0)     delete result.takeLast();
+        }
+
+        double              grid;
+        QList<CGSegment*>   openList;
+        QList<CGSegment*>   closedList;
+        QList<CGSegment*>   result;
+        CGSegment*          startPt;
+        CGSegment*          goalPt;
+};
+
 class CGSegmentRoute : public QObject
 {
 	Q_OBJECT
 	public:
 
+        typedef struct
+        {
+            QList<CGSegment*>   openList;
+            QList<CGSegment*>   closedList;
+            QList<CGSegment*>   result;
+            CGSegment*          startPt;
+            CGSegment*          goalPt;
+        } RouteState_t;
+
 		typedef enum
 		{
-            Segment=0,
+            SegmentRoute=0,
+            Segment,
 			Padstack,
 			Wire,
 			Via
-        } tSegmentType;
+        } Segment_t;
 
         CGSegmentRoute(CPcbNet* net);
-        virtual ~CGSegment();
+        virtual ~CGSegmentRoute();
 
-        virtual tSegmentType		segmentType() {return mSegmentType;}
-        virtual bool				isA(CGSegment::tSegmentType t) {return t==mSegmentType || t==CGSegment::Segment;}
-		virtual bool				isStatic();
+        virtual Segment_t           segmentType() {return SegmentRoute;}
+        virtual bool				isA(CGSegmentRoute::Segment_t t) {return t==SegmentRoute;}
+        virtual bool				isStatic();
 
-		virtual void				setWidth(double w);
-		virtual double				width();
+        /* pure virtuals */
+        virtual void				setWidth(double w)=0;
+        virtual double				width()=0;
 
-		void						setOrigin(QPointF pt) {mOrigin=pt;}
-		virtual QPointF				origin() {return mOrigin;}
-		QPointF						parentOrigin();
+        virtual void				setOrigin(QPointF pt)=0;
+        virtual QPointF				origin()=0;
+        virtual QPointF				parentOrigin()=0;
 
-		virtual void				setLayer(CPcbLayer* layer);
-		virtual CPcbLayer*			layer();
+        virtual void				setLayer(CPcbLayer* layer)=0;
+        virtual CPcbLayer*			layer()=0;
 
-		void						setParentSegment(CGSegment* segment) {mParentSegment=segment;}
-		CGSegment*					parentSegment() {return mParentSegment;}
+        virtual void				setParentSegment(CGSegment* segment)=0;
+        virtual CGSegment*			parentSegment()=0;
 
-		void						append(CGSegment* segment);
-		int							segments();
-		CGSegment*					segment(int idx);
-		int							segmentIndexOf(CGSegment* segment) {return segmentsRef().indexOf(segment);}
-		virtual bool				isEmpty() {return segments()==0;}
+        virtual void				append(CGSegment* segment)=0;
+        virtual int					segments()=0;
+        virtual CGSegment*			segment(int idx)=0;
+        virtual int					segmentIndexOf(CGSegment* segment)=0;
+        virtual bool				isEmpty()=0;
 
-		virtual QRectF				boundingRect() const;
-		virtual QPainterPath		shape() const;
-        virtual void				paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
+        virtual CPcbNet*			net()=0;
+        virtual bool				selected()=0;
 
-		virtual CPcbNet*			net();
-		virtual bool				selected();
+        virtual QPolygonF           polygon()=0;
 
-        virtual QPolygonF           polygon();
-
-        /* routing / built-in A* path finding */
+        /* routing / built-in path finding */
         virtual bool				routed()                {return isStatic()?true:mRouted;}
         virtual	bool				routable()              {return isA(Wire) || isA(Via);}
-        virtual	void				route(double grid=0.5); // mil?
+        virtual	void				route(CGSegment* other=NULL,double grid=1.0); // mil?
 
-public slots:
+    public slots:
 		virtual void				clear();
 
 	protected:
-        inline void                 setCost(double cost)    {mCost=cost;}
-        inline double               cost()                  {return mCost;}
-        virtual void                setRouted(bool routed)  {mRouted=routed;}
-        double                      manhattanLength(CGSegment* a, CGSegment* b);
-        double                      adjacentCost(double grid, QPointF a, QPointF b);
-        double                      g(CGSegment* node,CGSegment* parent);
-        double                      h(QPointF a, QPointF goal);
-        double                      cost(CGSegment* node, CGSegment* parent);
-        QList<CGSegment*>&          path( double grid, CGSegment& target );
-        QList<CGSegment*>&			segmentsRef() {return mSegments;}
-        tSegmentType                mSegmentType;
-		CPcbNet*					mNet;
+        void                        setRouted(bool routed);
+        QList<CGSegment*>           path(CRouteState& state);
+        double                      cost(CRouteState& state,CGSegment* pt=NULL);
+        double                      manhattanLength(CRouteState& state, QPointF a, QPointF b);
+        double                      adjacentCost(CRouteState& state, QPointF a, QPointF b);
+        double                      g(CRouteState& state, CGSegment* pt=NULL);
+        double                      h(CRouteState& state, CGSegment* pt=NULL);
+        void                        insort(CRouteState& state, QList<CGSegment*>& list, CGSegment* node);
 
 	private:
-		QList<CGSegment*>			mSegments;
-		double						mWidth;
-		CPcbLayer*					mLayer;
-		CGSegment*					mParentSegment;
-		QPointF						mOrigin;
 		bool						mRouted;
         double                      mCost;
 };

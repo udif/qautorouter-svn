@@ -10,47 +10,39 @@
 #include <QGraphicsItem>
 #include <QPolygonF>
 #include <QPointF>
+#include <cgsegmentroute.h>
 
 class CPcb;
 class CPcbNet;
 class CPcbLayer;
-class CGSegment : public QObject, public QGraphicsItem
+class CGSegment : public CGSegmentRoute, public QGraphicsItem
 {
 	Q_OBJECT
 	public:
 
-        typedef enum
-        {
-            Segment=0,
-            Padstack,
-            Wire,
-            Via
-        } tSegmentType;
-
 		CGSegment(CPcbNet* net);
 		virtual ~CGSegment();
 
-        virtual tSegmentType		segmentType() {return mSegmentType;}
-        virtual bool				isA(CGSegment::tSegmentType t) {return t==mSegmentType || t==CGSegment::Segment;}
-		virtual bool				isStatic();
+        virtual Segment_t           segmentType() {return Segment;}
+        virtual bool				isA(CGSegment::Segment_t t) {return t==Segment || CGSegmentRoute::isA(t);}
 
 		virtual void				setWidth(double w);
 		virtual double				width();
 
-		void						setOrigin(QPointF pt) {mOrigin=pt;}
-		virtual QPointF				origin() {return mOrigin;}
-		QPointF						parentOrigin();
+        virtual void				setOrigin(QPointF pt) {mOrigin=pt;}
+        virtual QPointF				origin() {return mOrigin;}
+        virtual QPointF				parentOrigin();
 
 		virtual void				setLayer(CPcbLayer* layer);
 		virtual CPcbLayer*			layer();
 
-		void						setParentSegment(CGSegment* segment) {mParentSegment=segment;}
-		CGSegment*					parentSegment() {return mParentSegment;}
+        virtual void				setParentSegment(CGSegment* segment) {mParentSegment=segment;}
+        virtual CGSegment*			parentSegment() {return mParentSegment;}
 
-		void						append(CGSegment* segment);
-		int							segments();
-		CGSegment*					segment(int idx);
-		int							segmentIndexOf(CGSegment* segment) {return segmentsRef().indexOf(segment);}
+        virtual void				append(CGSegment* segment);
+        virtual int					segments();
+        virtual CGSegment*			segment(int idx);
+        virtual int					segmentIndexOf(CGSegment* segment) {return segmentsRef().indexOf(segment);}
 		virtual bool				isEmpty() {return segments()==0;}
 
 		virtual QRectF				boundingRect() const;
@@ -62,26 +54,12 @@ class CGSegment : public QObject, public QGraphicsItem
 
         virtual QPolygonF           polygon();
 
-        /* routing / built-in A* path finding */
-        virtual bool				routed()                {return isStatic()?true:mRouted;}
-        virtual	bool				routable()              {return isA(Wire) || isA(Via);}
-        virtual	void				route(double grid=0.5); // mil?
-
-public slots:
+    public slots:
 		virtual void				clear();
 
 	protected:
-        inline void                 setCost(double cost)    {mCost=cost;}
-        inline double               cost()                  {return mCost;}
-        virtual void                setRouted(bool routed)  {mRouted=routed;}
-        double                      manhattanLength(CGSegment* a, CGSegment* b);
-        double                      adjacentCost(double grid, QPointF a, QPointF b);
-        double                      g(CGSegment* node,CGSegment* parent);
-        double                      h(QPointF a, QPointF goal);
-        double                      cost(CGSegment* node, CGSegment* parent);
-        QList<CGSegment*>&          path( double grid, CGSegment& target );
+
         QList<CGSegment*>&			segmentsRef() {return mSegments;}
-        tSegmentType                mSegmentType;
 		CPcbNet*					mNet;
 
 	private:
@@ -89,9 +67,7 @@ public slots:
 		double						mWidth;
 		CPcbLayer*					mLayer;
 		CGSegment*					mParentSegment;
-		QPointF						mOrigin;
-		bool						mRouted;
-        double                      mCost;
+        QPointF						mOrigin;
 };
 
 #endif // CGSEGMENT_H

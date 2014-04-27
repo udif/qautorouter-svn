@@ -17,7 +17,6 @@ CGPadstack::CGPadstack(CPcbNet* net,CPcbPlace* place,QString pinRef, QObject* /*
 , mPlace(place)
 , mPinRef(pinRef)
 {
-	mSegmentType=CGSegment::Padstack;
 	mGPadstacks.insert(unitRef(),this);
 }
 

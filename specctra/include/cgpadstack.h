@@ -24,6 +24,9 @@ class CGPadstack : public CGSegment
 		CGPadstack(CPcbNet* net,CPcbPlace* place=NULL,QString pinRef=QString(),QObject *parent = 0);
 		virtual ~CGPadstack();
 
+        virtual Segment_t           segmentType() {return Padstack;}
+        virtual bool				isA(CGSegment::Segment_t t) {t==Padstack || CGSegment::isA(t);}
+
 		void						addPad(CGPad* pad);
 		CPcbPlace*					place();
 		CPcb*						pcb();
