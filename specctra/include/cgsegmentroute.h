@@ -63,7 +63,7 @@ class CGSegmentRoute : public QObject
 			Via
         } Segment_t;
 
-        CGSegmentRoute(CPcbNet* net);
+        CGSegmentRoute();
         virtual ~CGSegmentRoute();
 
         virtual Segment_t           segmentType() {return SegmentRoute;}
@@ -98,6 +98,7 @@ class CGSegmentRoute : public QObject
         /* routing / built-in path finding */
         virtual bool				routed()                {return isStatic()?true:mRouted;}
         virtual	bool				routable()              {return isA(Wire) || isA(Via);}
+        virtual void                setCost(double cost);
 
     public slots:
         virtual	void				route(CGSegment* goalPt=NULL, double grid=1.0); // mil?
@@ -120,8 +121,8 @@ class CGSegmentRoute : public QObject
         double                      g(CRouteState& state, CGSegment* pt=NULL);
         double                      h(CRouteState& state, CGSegment* pt=NULL);
         double                      cost();
-        void                        open(CRouteState& state, CGSegment* pt);
-        void                        close(CRouteState& state, CGSegment* pt);
+        void                        open(CRouteState& state, CGSegment* pt=NULL);
+        void                        close(CRouteState& state, CGSegment* pt=NULL);
 
 	private:
 		bool						mRouted;
