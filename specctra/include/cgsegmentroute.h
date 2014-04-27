@@ -98,7 +98,7 @@ class CGSegmentRoute : public QObject
         /* routing / built-in path finding */
         virtual bool				routed()                {return isStatic()?true:mRouted;}
         virtual	bool				routable()              {return isA(Wire) || isA(Via);}
-        virtual	void				route(CGSegment* other=NULL,double grid=1.0); // mil?
+        virtual	void				route(CGSegment* goalPt=NULL, double grid=1.0); // mil?
 
     public slots:
 		virtual void				clear();
@@ -106,12 +106,13 @@ class CGSegmentRoute : public QObject
 	protected:
         void                        setRouted(bool routed);
         QList<CGSegment*>           path(CRouteState& state);
+        QList<CGSegment*>           childList(CRouteState& state, CGSegment* pt);
+        void                        insort(CRouteState& state, QList<CGSegment*>& list, CGSegment* node);
         double                      cost(CRouteState& state,CGSegment* pt=NULL);
         double                      manhattanLength(CRouteState& state, QPointF a, QPointF b);
         double                      adjacentCost(CRouteState& state, QPointF a, QPointF b);
         double                      g(CRouteState& state, CGSegment* pt=NULL);
         double                      h(CRouteState& state, CGSegment* pt=NULL);
-        void                        insort(CRouteState& state, QList<CGSegment*>& list, CGSegment* node);
 
 	private:
 		bool						mRouted;

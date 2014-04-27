@@ -52,9 +52,12 @@ void CGSegmentRoute::setRouted(bool routed)
 /**
  * @brief Route the segment.
  */
-void CGSegmentRoute::route(CGSegment* other,double grid)
+void CGSegmentRoute::route(CGSegment* goalPt, double grid)
 {
     CRouteState state;
+    state.goalPt = goalPt;
+    state.startPt = qobject_cast<CGSegment*>(this);
+    state.grid = grid;
     if ( other )
     {
         state.result = path(state);
@@ -73,7 +76,84 @@ void CGSegmentRoute::route(CGSegment* other,double grid)
  */
 QList<CGSegment*> CGSegmentRoute::path(CRouteState& state)
 {
+    QEventLoop eventLoop;
+    int idx=0;
+    QList<CGSegment*> rc;
+    // Initialize the open list with that starting point.
+    insort(state,state.openList,state.startPt);
+    while(!state.openList->isEmpty() && (node = state.openList->takeFirst()) != state.goalPt ) // FIXME
+    {
+        eventLoop.processEvents();
+        QList<CGSegment*> children = childList(node);
+        for(int n=0; n < children.count(); n++)
+        {
+            CAStarNode child = children[n];
+            // child node already in the open list?
+            int oIdx = mOpenList.indexOf(child);
+            if ( oIdx >=0 )
+            {
+                // the existing node is better?
+                CAStarNode other = mOpenList[oIdx];
+                if ( other <= child )
+                    continue;
+            }
+            // child node already in the closed list?
+            int cIdx = mClosedList.indexOf(child);
+            if ( cIdx >= 0 )
+            {
+                // the existing node is better?
+                CAStarNode other = mClosedList[cIdx];
+                if ( other <= child )
+                    continue;
+            }
+            // remove child from open and closed lists
+            if ( oIdx >= 0 )
+                mOpenList.takeAt(oIdx);
+            if ( cIdx >= 0 )
+                mClosedList.takeAt(cIdx);
+            // add child to open list
+            open(child);
 
+        }
+        close(node);
+    }
+    // follow parent nodes from goal back to start
+    do
+    {
+        CAStarNode other(node.parent());
+        rc.append(node);
+        if ( ( idx = mClosedList.indexOf( other ) ) >= 0 )
+            other = mClosedList.takeAt(idx);
+        else
+        if ( ( idx = mOpenList.indexOf( other ) ) >= 0 )
+            other = mOpenList.takeAt(idx);
+        else
+            break;
+        node = other;
+    } while( !isEmpty(node.pos()) );
+    return rc;
+}
+
+/**
+ * @brief Create a child list to explore from neighbours.
+ * @param state The current state of the path finding process.
+ * @param pt If not NULL, then use the segment at this point or else if NULL, then use this.
+ * @return A list of neighbours to explore.
+ */
+QList<CGSegment*> CGSegmentRoute::childList(CRouteState& state, CGSegment* pt)
+{
+    QList<CGSegment*> rc;
+    for(int x=-state.grid; x<=state.grid; x++)
+    {
+        for(int y=-state.grid; y<=state.grid; y++)
+        {
+            CGSegment* child = new CGSegment(state.startPt->net());
+            child->setPos(QPoint(node.pos().x()+x,node.pos().y()+y));
+            child.->setCost( cost( child, node ) );
+            rc.append(child);
+        }
+    }
+    return rc;
 }
 
 /**
