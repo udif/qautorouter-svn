@@ -12,14 +12,8 @@ unix {
 	target.path = /opt/qautorouter/plugins
 	INSTALLS += target
 }
-SOURCES += simplerouter.cpp \
-    castarnode.cpp \
-    castar.cpp \
-    castarmarker.cpp
-HEADERS += simplerouter.h \
-    castarnode.h \
-    castar.h \
-    castarmarker.h
+SOURCES += simplerouter.cpp
+HEADERS += simplerouter.h
 OTHER_FILES += README.txt \
     simplerouter.json
 unix: LIBS += -L../../specctra -lspecctra

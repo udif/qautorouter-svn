@@ -18,8 +18,6 @@
 #include <cpcbplacement.h>
 #include <cpcbplace.h>
 
-#include "castarnode.h"
-
 #include <QPolygonF>
 #include <QVector>
 
@@ -151,7 +149,6 @@ bool SimpleRouter::start(CPcb* pcb)
 	mPcb = pcb;
 	setState(Idle);
 	mStartTime = QDateTime::currentDateTime();
-	mGridRez=0;
 	if ( mPcb != NULL && mPcb->network() != NULL )
 	{
 		setState(Selecting);
@@ -206,139 +203,13 @@ void SimpleRouter::select()
 
 
 /// spy on what A* is doing for debugging, open nodes
-void SimpleRouter::slotOpen(QPoint pt)
+void SimpleRouter::slotOpen(CGSegment* pt)
 {
-	QPoint gridTopLeft( pt.x()-(1), pt.y()-(1) );
-	QPoint gridBottomRight( pt.x()+(1), pt.y()+(1) );
-	QPointF sceneTopLeft = scenePt( gridTopLeft );
-	QPointF sceneBottomRight = scenePt( gridBottomRight );
-	QRectF sceneRect( sceneTopLeft, sceneBottomRight );
-	CSpecctraObject::globalScene()->addEllipse(sceneRect,QPen(Qt::green));
 }
 
 /// spy on what A* is doing for debugging, closed nodes
-void SimpleRouter::slotClose(QPoint pt)
+void SimpleRouter::slotClose(CGSegment* pt)
 {
-	QPoint gridTopLeft( pt.x()-(1), pt.y()-(1) );
-	QPoint gridBottomRight( pt.x()+(1), pt.y()+(1) );
-	QPointF sceneTopLeft = scenePt( gridTopLeft );
-	QPointF sceneBottomRight = scenePt( gridBottomRight );
-	QRectF sceneRect( sceneTopLeft, sceneBottomRight );
-	CSpecctraObject::globalScene()->addEllipse(sceneRect,QPen(Qt::red));
-}
-
-/// Translate from a grid point to a grid point suitable for A* search.
-/// Each A* grid point represents a rectangle of size mGridRez.
-QPointF SimpleRouter::scenePt(QPoint gridPt)
-{
-	QPointF rc( ((double)gridPt.x()*mGridRez), ((double)gridPt.y()*mGridRez) );
-	return rc;
-}
-
-/// Translate from a sceen point to a grid point suitable for A* search.
-/// Each A* grid point represents a rectangle of size mGridRez.
-QPoint SimpleRouter::gridPt(QPointF scenePt)
-{
-	QPoint rc( (scenePt.x()/mGridRez), (scenePt.y()/mGridRez) );
-	return rc;
-}
-
-/// Plot a point on the grid
-void SimpleRouter::gridPlotPt(QList<CAStarMarker>& grid, QPoint gridPt)
-{
-	grid.append(gridPt);
-}
-
-/// Use Bresenham's line algorithm to plot a line on the grid between two points
-void SimpleRouter::gridPlotLine(QList<CAStarMarker>& grid, QPoint gridPt1,QPoint gridPt2)
-{
-	double x1 = gridPt1.x();
-	double y1 = gridPt1.y();
-	double x2 = gridPt2.x();
-	double y2 = gridPt2.y();
-	bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
-	if(steep)
-	{
-		qSwap(x1, y1);
-		qSwap(x2, y2);
-	}
-	if(x1 > x2)
-	{
-		qSwap(x1, x2);
-		qSwap(y1, y2);
-	}
-	double dx = x2 - x1;
-	double dy = fabs(y2 - y1);
-	double error = dx / 2.0f;
-	double ystep = (y1 < y2) ? 1 : -1;
-	int y = (int)y1;
-	int maxX = (int)x2;
-	for(int x=(int)x1; x<maxX; x++)
-	{
-		if(steep)
-			gridPlotPt(grid,QPoint(y,x));
-		else
-			gridPlotPt(grid,QPoint(x,y));
-		if( (error -= dy) < 0)
-		{
-			y += ystep;
-			error += dx;
-		}
-	}
-}
-
-/// Generate the keepout list in A* grid coordinates, excluding the wire being routed.
-/// @param exclude1 One end point of the wire being routed.
-/// @param exclude2 One end point of the wire being routed.
-/// @param mGridRez The current grid rezolution.
-/// @return a reference to a marker array in A* grid coordinates.
-QList<CAStarMarker>& SimpleRouter::keepOutList(CGSegment* exclude1, CGSegment* exclude2)
-{
-	mKeepOutList.clear();
-	// genrate the board outline in A* grid coorinates
-	QList<QPointF> polyBounds = pcb()->structure()->boundary()->path()->polygon();
-	for(int n=0; n < polyBounds.count()-1; n++)
-	{
-		// render a grid-coordinate poly-line for each sceen-coordinate polyline.
-		QPoint pt1 = gridPt(polyBounds[n]);
-		QPoint pt2 = gridPt(polyBounds[n+1]);
-		gridPlotLine(mKeepOutList,pt1,pt2);
-	}
-#if 0
-	// FIXME - have each CSpecctraObject to maintain it's own keep-out shape (or, let's more correctly call it it's "copper shape"
-	// FIXME - such that only things that are copper produce keep-outs (we are getting hung up here on silk screen shapes and all that crap)
-	// FIXME - in this way we don't have to repeatedly figure that out at this stage and we can simply
-	// FIXME - call on the root CSpecctraObject to prodddduce a keep-out mask for each layer.
-	// FIXME - Will need a mechanism for "un-masking" the source and destinations such that A* can penetrate
-	// FIXME the target footprint to get to the center point of it.
-
-	// FIXME - Provide a means of obtaining a complete pad-list as shapes.
-	// FIXME - provide a means of obtaining a complete copper shape list per layer.(pads + zones + routed wires)
-	// FIXME - To simplify the implementation, can we query layers? Find the copper layers, and then query the shapes on those layers?
-
-
-	// generate keep-outs for the other shapes (for initial testing/experimentation only)...
-	if ( pcb() != NULL && pcb()->placement() != NULL )
-	{
-		for(int nPlacement=0; nPlacement < pcb()->placement()->places();nPlacement++)
-		{
-			CPcbPlace* place = pcb()->placement()->place(nPlacement);
-			if ( !place->contains(exclude1) && !place->contains(exclude2) )
-			{
-				QPainterPath shape = place->shape();
-				QPolygonF polygon = shape.toFillPolygon();
-				for(int n=0;n<polygon.size()-1;n++)
-				{
-					// render a grid-coordinate poly-line for each sceen-coordinate polyline.
-					QPoint pt1 = gridPt(polygon[n]);
-					QPoint pt2 = gridPt(polygon[n+1]);
-					gridPlotLine(mKeepOutList,pt1,pt2);
-				}
-			}
-		}
-	}
-#endif
-	return mKeepOutList;
 }
 
 /// draw a single rat line
@@ -350,52 +221,30 @@ void SimpleRouter::drawRatLine(CGSegment* seg1, CGSegment* seg2)
 	CSpecctraObject::globalScene()->addPath(painterPath);
 }
 
-/// route a path from A* nodes
-void SimpleRouter::route( QList<CAStarNode>& path, CGSegment* seg1, CGSegment* seg2)
-{
-	// FIXME - make a CGWire follow the A* nodes...
-	// FIXME - for now just paint a line...
-	QPainterPath painterPath;
-	for(int n=0; n < path.count(); n++)
-	{
-		CAStarNode node = path[n];
-		QPointF pt = scenePt( node.pos());
-		printf( "node[%d,%d]\n",node.pos().x(),node.pos().y());
-		if ( n==0 )
-			painterPath.moveTo( pt );
-		else
-			painterPath.lineTo( pt );
-	}
-	CSpecctraObject::globalScene()->addPath(painterPath);
-}
-
-/// route some nets...
+/**
+ * @brief Pop nets from the stack and route them in th eorder that they are popped off.
+ */
 void SimpleRouter::route()
 {
 	if( netStack().count() )
 	{
 		CPcbNet* net = netStack().pop();
 		QList<CGPadstack*>& padstacks =	net->padstacksRef();
-		//selectNet(net,true);
-
-		// FIXME - Some kind of orientation problem with the padstacks, not getting the translated shape coordinates?
-		// FIXME - Or is it an error translating between A* coordinates and scene coordinates?
+        selectNet(net,true);
 
 		for( int n=0; running() && n < padstacks.count()-1; n++)
 		{
 			CGPadstack* padstack1 = padstacks[n];
 			CGPadstack* padstack2 = padstacks[n+1];
-			//mGridRez = net->width()/4;  // A* resolution maybe should be saller than the trace width, probably / 4 ?
-			mGridRez = net->width();  // The resolution to use for the A* search.
-			CAStar astar( keepOutList(padstack1,padstack2),
-						  gridPt(padstack1->place()->centre()),
-						  gridPt(padstack2->place()->centre()) );
-			QObject::connect(&astar,SIGNAL(signalOpen(QPoint)),this,SLOT(slotOpen(QPoint)));
-			QObject::connect(&astar,SIGNAL(signalClose(QPoint)),this,SLOT(slotClose(QPoint)));
-			QList<CAStarNode> path = astar.path();
-			//drawRatLine(padstack1,padstack2);
-			route(path,padstack1,padstack2);
-			emit status(currentStatus());
+            drawRatLine(padstack1,padstack2);
+            QObject::connect(padstack1,SIGNAL(signalOpen(CGSegment*)),this,SLOT(slotOpen(CGSegment*)));
+            QObject::connect(padstack1,SIGNAL(signalClose(CGSegment*)),this,SLOT(slotClose(CGSegment*)));
+            QObject::connect(padstack1,SIGNAL(status(QString)),this,SIGNAL(status(QString)));
+            padstack1->route(padstack2);
+            QObject::disconnect(padstack1,SIGNAL(signalOpen(CGSegment*)),this,SLOT(slotOpen(CGSegment*)));
+            QObject::disconnect(padstack1,SIGNAL(signalClose(CGSegment*)),this,SLOT(slotClose(CGSegment*)));
+            QObject::disconnect(padstack1,SIGNAL(status(QString)),this,SIGNAL(status(QString)));
+            emit status(currentStatus());
 		}
 		selectNet(net,false);
 	}

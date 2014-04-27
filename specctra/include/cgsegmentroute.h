@@ -106,6 +106,7 @@ class CGSegmentRoute : public QObject
     signals:
         void                        signalOpen(CGSegment* segment);
         void                        signalClose(CGSegment* segment);
+        void                        status(QString txt);
 
     public slots:
 		virtual void				clear();

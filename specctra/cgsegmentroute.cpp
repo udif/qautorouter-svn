@@ -38,7 +38,7 @@ void CGSegmentRoute::clear()
   */
 bool CGSegmentRoute::isStatic()
 {
-    return isA(CGSegmentRoute::Padstack) && !isA(CGSegmentRoute::Via);
+    return isA(CGSegmentRoute::Padstack) && isA(CGSegmentRoute::Via);
 }
 
 /**
@@ -91,6 +91,9 @@ QList<CGSegment*> CGSegmentRoute::path(CRouteState& state)
         for(int n=0; n < children.count(); n++)
         {
             CGSegment* child = children[n];
+            QString debug;
+            debug.sprintf("[%.02g:%.02g]",child->pos().x(),child->pos().y());
+            emit status(debug);
             int oIdx = state.openList.indexOf(child);       // Child node already in the open list?
             if ( oIdx >=0 )
             {
@@ -128,6 +131,7 @@ QList<CGSegment*> CGSegmentRoute::path(CRouteState& state)
             break;
         node = other;
     } while( node != state.startPt );
+
     return rc;
 }
 
