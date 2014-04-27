@@ -92,7 +92,7 @@ QList<CGSegment*> CGSegmentRoute::path(CRouteState& state)
         {
             CGSegment* child = children[n];
             QString debug;
-            debug.sprintf("[%.02g:%.02g]",child->pos().x(),child->pos().y());
+            debug.sprintf("[%8.02g:%8.02g]",child->origin().x(),child->origin().y());
             emit status(debug);
             int oIdx = state.openList.indexOf(child);       // Child node already in the open list?
             if ( oIdx >=0 )
@@ -173,7 +173,7 @@ QList<CGSegment*> CGSegmentRoute::childList(CRouteState& state, CGSegment* pt)
         for(int y=-state.grid; y<=state.grid; y++)
         {
             CGSegment* child = new CGSegment(state.startPt->net());
-            child->setPos(QPointF(pt->pos().x()+x,pt->pos().y()+y));
+            child->setOrigin(QPointF(pt->origin().x()+x,pt->origin().y()+y));
             child->setCost( child->cost( state ) );
             rc.append(child);
         }
@@ -247,9 +247,9 @@ double CGSegmentRoute::g(CRouteState& state, CGSegment* pt)
 {
     if ( !pt )
         pt = qobject_cast<CGSegment*>(this);
-    double rc=adjacentCost(state,state.startPt->pos(),pt->pos());
+    double rc=adjacentCost(state,state.startPt->origin(),pt->origin());
     for( ; pt && pt != state.startPt; pt = pt->parentSegment() )
-        rc += adjacentCost( state, state.startPt->pos(), pt->pos() );
+        rc += adjacentCost( state, state.startPt->origin(), pt->origin() );
     return rc;
 }
 
@@ -261,7 +261,7 @@ double CGSegmentRoute::h(CRouteState& state, CGSegment* pt)
 {
     if ( !pt )
         pt = qobject_cast<CGSegment*>(this);
-    double rc = manhattanLength( state, pt->pos(), state.goalPt->pos() ) * state.grid; // 10.0??
+    double rc = manhattanLength( state, pt->origin(), state.goalPt->origin() ) * state.grid; // 10.0??
     return rc;
 }
 
