@@ -109,9 +109,17 @@ QList<CGSegment*> CGSegmentRoute::path(CRouteState& state)
                     continue;
             }
             if ( oIdx >= 0 )                                // Remove child from open and closed lists
-                state.openList.takeAt(oIdx);
-            if ( cIdx >= 0 )
-                state.closedList.takeAt(cIdx);
+            {
+                CGSegment* p = state.openList.takeAt(oIdx);
+                if ( p != state.startPt )
+                    delete p;
+            }
+            if ( cIdx >= 0 )                                // Remove child from open and closed lists
+            {
+                CGSegment* p = state.closedList.takeAt(cIdx);
+                if ( p != state.startPt )
+                    delete p;
+            }
             open(state,child);                              // Add child to open list
         }
         close(state,node);
