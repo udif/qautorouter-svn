@@ -14,7 +14,7 @@
 #define inherited CGSegmentRoute
 
 CGSegment::CGSegment(CPcbNet* net)
-: inherited(NULL)
+: inherited()
 , mNet(net)
 , mWidth(0.0)
 , mLayer(NULL)

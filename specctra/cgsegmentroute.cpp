@@ -10,6 +10,7 @@
 #include "cpcbnet.h"
 
 #include <QPainter>
+#include <QEventLoop>
 
 #define inherited QObject
 
@@ -76,62 +77,77 @@ void CGSegmentRoute::route(CGSegment* goalPt, double grid)
  */
 QList<CGSegment*> CGSegmentRoute::path(CRouteState& state)
 {
+    QList<CGSegment*> rc;
+    CGSegment* node = NULL;
     QEventLoop eventLoop;
     int idx=0;
-    QList<CGSegment*> rc;
-    // Initialize the open list with that starting point.
-    insort(state,state.openList,state.startPt);
-    while(!state.openList->isEmpty() && (node = state.openList->takeFirst()) != state.goalPt ) // FIXME
+
+    insort(state,state.openList,state.startPt);             // Initialize the open list with that starting point.
+
+    for( node=state.startPt; !state.openList.isEmpty() && (node = state.openList->takeFirst()) != state.goalPt; )
     {
         eventLoop.processEvents();
-        QList<CGSegment*> children = childList(node);
+        QList<CGSegment*> children = childList(state,node);
         for(int n=0; n < children.count(); n++)
         {
-            CAStarNode child = children[n];
-            // child node already in the open list?
-            int oIdx = mOpenList.indexOf(child);
+            CGSegment* child = children[n];
+            int oIdx = state.openList.indexOf(child);       // Child node already in the open list?
             if ( oIdx >=0 )
             {
-                // the existing node is better?
-                CAStarNode other = mOpenList[oIdx];
-                if ( other <= child )
+                CGSegment* other = state.openList[oIdx];    // The existing node is better?
+                if ( other->cost() <= child->cost() )
                     continue;
             }
-            // child node already in the closed list?
-            int cIdx = mClosedList.indexOf(child);
+            int cIdx = state.closedList.indexOf(child);     // Child node already in the closed list?
             if ( cIdx >= 0 )
             {
-                // the existing node is better?
-                CAStarNode other = mClosedList[cIdx];
-                if ( other <= child )
+                CGSegment* other = mClosedList[cIdx];       // The existing node is better?
+                if ( other->cost() <= child->cost() )
                     continue;
             }
-            // remove child from open and closed lists
-            if ( oIdx >= 0 )
-                mOpenList.takeAt(oIdx);
+            if ( oIdx >= 0 )                                // Remove child from open and closed lists
+                state.openList.takeAt(oIdx);
             if ( cIdx >= 0 )
-                mClosedList.takeAt(cIdx);
-            // add child to open list
-            open(child);
+                state.closedList.takeAt(cIdx);
+            open(state,child);                              // Add child to open list
 
         }
-        close(node);
+        close(state,node);
     }
+
     // follow parent nodes from goal back to start
     do
     {
-        CAStarNode other(node.parent());
+        CGSegment other = node->parentSegment();
         rc.append(node);
-        if ( ( idx = mClosedList.indexOf( other ) ) >= 0 )
-            other = mClosedList.takeAt(idx);
+        if ( ( idx = state.closedList.indexOf( other ) ) >= 0 )
+            other = state.closedList.takeAt(idx);
         else
-        if ( ( idx = mOpenList.indexOf( other ) ) >= 0 )
-            other = mOpenList.takeAt(idx);
+        if ( ( idx = state.openList.indexOf( other ) ) >= 0 )
+            other = state.openList.takeAt(idx);
         else
             break;
         node = other;
-    } while( !isEmpty(node.pos()) );
+    } while( node != state.startPt );
     return rc;
+}
+
+/**
+ * @brief Transfer a node to the open list.
+ */
+void CGSegmentRoute::open(CRouteState& state, CGSegment* pt)
+{
+    insort(state,state.openList,pt);
+    emit signalOpen(node.pos());
+}
+
+/**
+ * @brief Transfer a node to the closed list.
+ */
+void CGSegmentRoute::close(CAStarNode& node)
+{
+    insort(mClosedList,node);
+    emit signalClose(node.pos());
 }
 
 /**
@@ -143,13 +159,15 @@ QList<CGSegment*> CGSegmentRoute::path(CRouteState& state)
 QList<CGSegment*> CGSegmentRoute::childList(CRouteState& state, CGSegment* pt)
 {
     QList<CGSegment*> rc;
+    if (!pt)
+        pt = qobject_cast<CGSegment*>(this);
     for(int x=-state.grid; x<=state.grid; x++)
     {
         for(int y=-state.grid; y<=state.grid; y++)
         {
             CGSegment* child = new CGSegment(state.startPt->net());
-            child->setPos(QPoint(node.pos().x()+x,node.pos().y()+y));
-            child.->setCost( cost( child, node ) );
+            child->setPos(QPoint(pt->pos().x()+x,pt->pos().y()+y));
+            child->setCost( child->cost( state ) );
             rc.append(child);
         }
     }
@@ -191,8 +209,19 @@ double CGSegmentRoute::cost(CRouteState& state, CGSegment* pt)
 {
     if (!pt)
         pt = qobject_cast<CGSegment*>(this);
-    double rc = g(state,pt) + h(state,pt);
-    return rc;
+    mCost = g(state,pt) + h(state,pt);
+    return cost();
+}
+
+/**
+ * @brief Calculate the cost of this node based on the g() and h() functions. Cost in terms of efficiency.
+ * @param node The
+ * @param parent
+ * @return
+ */
+double CGSegmentRoute::cost()
+{
+    return mCost;
 }
 
 /**
