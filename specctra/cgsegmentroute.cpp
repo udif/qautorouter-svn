@@ -94,51 +94,43 @@ QList<CGSegment*> CGSegmentRoute::path(CRouteState& state)
             QString debug;
             debug.sprintf("[%8.02g:%8.02g]",child->origin().x(),child->origin().y());
             emit status(debug);
-            int oIdx = state.openList.indexOf(child);       // Child node already in the open list?
+            int oIdx = indexOf(state,state.openList,child);     // Child node already in the open list?
             if ( oIdx >=0 )
             {
-                CGSegment* other = state.openList[oIdx];    // The existing node is better?
+                CGSegment* other = state.openList[oIdx];        // The existing node is better?
                 if ( other->cost() <= child->cost() )
                     continue;
             }
-            int cIdx = state.closedList.indexOf(child);     // Child node already in the closed list?
+            int cIdx = indexOf(state,state.closedList,child);   // Child node already in the closed list?
             if ( cIdx >= 0 )
             {
-                CGSegment* other = state.closedList[cIdx];  // The existing node is better?
+                CGSegment* other = state.closedList[cIdx];      // The existing node is better?
                 if ( other->cost() <= child->cost() )
                     continue;
             }
-            if ( oIdx >= 0 )                                // Remove child from open and closed lists
+            if ( oIdx >= 0 )                                    // Remove child from open and closed lists
             {
                 CGSegment* p = state.openList.takeAt(oIdx);
                 if ( p != state.startPt )
                     delete p;
             }
-            if ( cIdx >= 0 )                                // Remove child from open and closed lists
+            if ( cIdx >= 0 )                                    // Remove child from open and closed lists
             {
                 CGSegment* p = state.closedList.takeAt(cIdx);
                 if ( p != state.startPt )
                     delete p;
             }
-            open(state,child);                              // Add child to open list
+            open(state,child);                                  // Add child to open list
         }
         close(state,node);
     }
 
     // follow parent nodes from goal back to start
-    do
+    while ( node != state.startPt )
     {
-        CGSegment* other = node->parentSegment();
         rc.append(node);
-        if ( ( idx = state.closedList.indexOf( other ) ) >= 0 )
-            other = state.closedList.takeAt(idx);
-        else
-        if ( ( idx = state.openList.indexOf( other ) ) >= 0 )
-            other = state.openList.takeAt(idx);
-        else
-            break;
-        node = other;
-    } while( node != state.startPt );
+        node = node->parentSegment();
+    }
 
     return rc;
 }
@@ -196,7 +188,7 @@ QList<CGSegment*> CGSegmentRoute::childList(CRouteState& state, CGSegment* pt)
  */
 void CGSegmentRoute::insort(CRouteState& state, QList<CGSegment*>& list, CGSegment* node)
 {
-    int idx = list.indexOf(node);
+    int idx = indexOf(state,list,node);
     if ( idx < 0 ) // insorted already?
     {
         int len = list.length();
@@ -212,6 +204,25 @@ void CGSegmentRoute::insort(CRouteState& state, QList<CGSegment*>& list, CGSegme
         if ( len == list.length() ) // no insert yet?
             list.append(node);
     }
+}
+
+/**
+ * @brief Find the index of a node based on origin.
+ * @param list List of nodes sorted by cost.
+ * @param node The new node to insert into the list.
+ */
+void CGSegmentRoute::indexOf(CRouteState& state, QList<CGSegment*>& list, CGSegment* node)
+{
+    int len = list.length();
+    for(int n=0; n < len; n++)
+    {
+        CGSegment* other = list[n];
+        if ( node->origin() == other->origin() )
+        {
+            return n;
+        }
+    }
+    return -1;
 }
 
 /**
