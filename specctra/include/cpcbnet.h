@@ -53,6 +53,7 @@ class CPcbNet : public CSpecctraObject
         bool						routed();
 
     protected:
+        void                        route(CGPadstack* endPoints[2]);
 		CGPadstack*					closest(int n,QPointF pt);
 		CGPadstack*					farthest(int n,QPointF pt);
 		void						swap(CGPadstack* p1,CGPadstack* p2);

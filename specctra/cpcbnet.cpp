@@ -49,6 +49,11 @@ QString CPcbNet::name()
 	return nm;
 }
 
+void CPcbNet::route(CGPadstack* endPoints[2])
+{
+    /* FIXME */
+}
+
 /**
   * @brief route
   */
@@ -61,9 +66,16 @@ void CPcbNet::route()
         for( x=0; x < padstacks(); x++)
         {
             endPoints[0] = padstack(x);
-            for(y=0; y < padstacks(); y++)
+            if ( !endPoints[0]->routed() )
             {
-                endPoints[0] = padstack(x);
+                for(y=0; y < padstacks(); y++)
+                {
+                    endPoints[1] = padstack(y);
+                    if ( !endPoints[1]->routed() )
+                    {
+                        route(endPoints);
+                    }
+                }
             }
         }
     }
