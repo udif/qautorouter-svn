@@ -84,45 +84,49 @@ QList<CGSegment*> CGSegmentRoute::path(CRouteState& state)
 
     insort(state,state.openList,state.startPt);             // Initialize the open list with that starting point.
 
-    for( node=state.startPt; !state.openList.isEmpty() && (node = state.openList.takeFirst()) != state.goalPt; )
+    for( node=state.startPt; !state.openList.isEmpty(); )
     {
-        eventLoop.processEvents();
-        QList<CGSegment*> children = childList(state,node);
-        for(int n=0; n < children.count(); n++)
+        node = state.openList.takeFirst();
+        if ( node->origin() != state.goalPt->origin() )
         {
-            CGSegment* child = children[n];
-            QString debug;
-            debug.sprintf("[%8.02g:%8.02g]",child->origin().x(),child->origin().y());
-            emit status(debug);
-            int oIdx = indexOf(state,state.openList,child);     // Child node already in the open list?
-            if ( oIdx >=0 )
+            eventLoop.processEvents();
+            QList<CGSegment*> children = childList(state,node);
+            for(int n=0; n < children.count(); n++)
             {
-                CGSegment* other = state.openList[oIdx];        // The existing node is better?
-                if ( other->cost() <= child->cost() )
-                    continue;
+                CGSegment* child = children[n];
+                QString debug;
+                debug.sprintf("[%d: %d: %d: %d]",state.openList.count(),state.closedList.count(),(int)child->origin().x(),(int)child->origin().y());
+                emit status(debug);
+                int oIdx = indexOf(state,state.openList,child);     // Child node already in the open list?
+                if ( oIdx >=0 )
+                {
+                    CGSegment* other = state.openList[oIdx];        // The existing node is better?
+                    if ( other->cost() <= child->cost() )
+                        continue;
+                }
+                int cIdx = indexOf(state,state.closedList,child);   // Child node already in the closed list?
+                if ( cIdx >= 0 )
+                {
+                    CGSegment* other = state.closedList[cIdx];      // The existing node is better?
+                    if ( other->cost() <= child->cost() )
+                        continue;
+                }
+                if ( oIdx >= 0 )                                    // Remove child from open and closed lists
+                {
+                    CGSegment* p = state.openList.takeAt(oIdx);
+                    if ( p != state.startPt )
+                        delete p;
+                }
+                if ( cIdx >= 0 )                                    // Remove child from open and closed lists
+                {
+                    CGSegment* p = state.closedList.takeAt(cIdx);
+                    if ( p != state.startPt )
+                        delete p;
+                }
+                open(state,child);                                  // Add child to open list
             }
-            int cIdx = indexOf(state,state.closedList,child);   // Child node already in the closed list?
-            if ( cIdx >= 0 )
-            {
-                CGSegment* other = state.closedList[cIdx];      // The existing node is better?
-                if ( other->cost() <= child->cost() )
-                    continue;
-            }
-            if ( oIdx >= 0 )                                    // Remove child from open and closed lists
-            {
-                CGSegment* p = state.openList.takeAt(oIdx);
-                if ( p != state.startPt )
-                    delete p;
-            }
-            if ( cIdx >= 0 )                                    // Remove child from open and closed lists
-            {
-                CGSegment* p = state.closedList.takeAt(cIdx);
-                if ( p != state.startPt )
-                    delete p;
-            }
-            open(state,child);                                  // Add child to open list
+            close(state,node);
         }
-        close(state,node);
     }
 
     // follow parent nodes from goal back to start
@@ -211,7 +215,7 @@ void CGSegmentRoute::insort(CRouteState& state, QList<CGSegment*>& list, CGSegme
  * @param list List of nodes sorted by cost.
  * @param node The new node to insert into the list.
  */
-void CGSegmentRoute::indexOf(CRouteState& state, QList<CGSegment*>& list, CGSegment* node)
+int CGSegmentRoute::indexOf(CRouteState& state, QList<CGSegment*>& list, CGSegment* node)
 {
     int len = list.length();
     for(int n=0; n < len; n++)

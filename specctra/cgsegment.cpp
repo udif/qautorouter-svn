@@ -11,7 +11,7 @@
 
 #include <QPainter>
 
-#define inherited CGSegmentRoute
+#define inherited QObject
 
 CGSegment::CGSegment(CPcbNet* net)
 : inherited()
@@ -19,6 +19,7 @@ CGSegment::CGSegment(CPcbNet* net)
 , mWidth(0.0)
 , mLayer(NULL)
 , mParentSegment(NULL)
+, mRouted(false)
 {
 	CSpecctraObject::globalScene()->addItem(this);
 }
@@ -33,7 +34,6 @@ CGSegment::~CGSegment()
   */
 void CGSegment::clear()
 {
-    inherited::clear();
 	mSegments.clear();
 }
 

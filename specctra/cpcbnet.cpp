@@ -50,6 +50,26 @@ QString CPcbNet::name()
 }
 
 /**
+  * @brief route
+  */
+void CPcbNet::route()
+{
+    if ( !routed() )
+    {
+        CGPadstack* endPoints[2]; // deal with two end points at a time.
+        sort();
+        for( x=0; x < padstacks(); x++)
+        {
+            endPoints[0] = padstack(x);
+            for(y=0; y < padstacks(); y++)
+            {
+                endPoints[0] = padstack(x);
+            }
+        }
+    }
+}
+
+/**
   * @brief determine of the net is routed.
   */
 bool CPcbNet::routed()

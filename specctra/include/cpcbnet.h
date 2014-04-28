@@ -15,6 +15,7 @@
 #include <QList>
 #include <QStringList>
 #include <QPainterPath>
+#include <QList>
 
 class CPcbPin;
 class CPcbClass;
@@ -43,11 +44,13 @@ class CPcbNet : public CSpecctraObject
 
 		void						setWidth(double w) {mWidth=w;}
         double						width();
-		bool						routed();
 		CPcbClass*					netClass();
 		virtual QRectF				boundingRect() const;
 		virtual QPainterPath		shape() const;
         virtual void				paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
+
+        void                        route();
+        bool						routed();
 
     protected:
 		CGPadstack*					closest(int n,QPointF pt);

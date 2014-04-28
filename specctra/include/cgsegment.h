@@ -10,21 +10,29 @@
 #include <QGraphicsItem>
 #include <QPolygonF>
 #include <QPointF>
-#include <cgsegmentroute.h>
 
 class CPcb;
 class CPcbNet;
 class CPcbLayer;
-class CGSegment : public CGSegmentRoute, public QGraphicsItem
+class CGSegment : public QObject, public QGraphicsItem
 {
 	Q_OBJECT
 	public:
 
-		CGSegment(CPcbNet* net);
+        typedef enum
+        {
+            Invalid=0,
+            Segment,
+            Padstack,
+            Wire,
+            Via
+        } Segment_t;
+
+        CGSegment(CPcbNet* net);
 		virtual ~CGSegment();
 
         virtual Segment_t           segmentType() {return Segment;}
-        virtual bool				isA(CGSegment::Segment_t t) {return t==Segment || CGSegmentRoute::isA(t);}
+        virtual bool				isA(Segment_t t) {return t==Segment;}
 
 		virtual void				setWidth(double w);
 		virtual double				width();
@@ -54,6 +62,9 @@ class CGSegment : public CGSegmentRoute, public QGraphicsItem
 
         virtual QPolygonF           polygon();
 
+        virtual void                setRouted(bool routed) {mRouted=routed;}
+        virtual bool                routed() {return mRouted;}
+
     public slots:
 		virtual void				clear();
 
@@ -68,6 +79,7 @@ class CGSegment : public CGSegmentRoute, public QGraphicsItem
 		CPcbLayer*					mLayer;
 		CGSegment*					mParentSegment;
         QPointF						mOrigin;
+        bool                        mRouted;
 };
 
 #endif // CGSEGMENT_H

@@ -54,15 +54,6 @@ class CGSegmentRoute : public QObject
             CGSegment*          goalPt;
         } RouteState_t;
 
-		typedef enum
-		{
-            SegmentRoute=0,
-            Segment,
-			Padstack,
-			Wire,
-			Via
-        } Segment_t;
-
         CGSegmentRoute();
         virtual ~CGSegmentRoute();
 
@@ -116,7 +107,7 @@ class CGSegmentRoute : public QObject
         QList<CGSegment*>           path(CRouteState& state);
         QList<CGSegment*>           childList(CRouteState& state, CGSegment* pt=NULL);
         void                        insort(CRouteState& state, QList<CGSegment*>& list, CGSegment* node);
-        void                        indexOf(CRouteState& state, QList<CGSegment*>& list, CGSegment* node);
+        int                         indexOf(CRouteState& state, QList<CGSegment*>& list, CGSegment* node);
         double                      cost(CRouteState& state,CGSegment* pt=NULL);
         double                      manhattanLength(CRouteState& state, QPointF a, QPointF b);
         double                      adjacentCost(CRouteState& state, QPointF a, QPointF b);
