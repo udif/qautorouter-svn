@@ -145,7 +145,9 @@ QString SimpleRouter::currentStatus()
   */
 bool SimpleRouter::start(CPcb* pcb)
 {
-	netStack().clear();
+    mEndPoint[0]=mEndPoint[1]=NULL;
+    mRatLine=NULL;
+    mNet=NULL;
 	mPcb = pcb;
 	setState(Idle);
 	mStartTime = QDateTime::currentDateTime();
@@ -169,90 +171,103 @@ void SimpleRouter::stop()
 	QObject::disconnect(this,SIGNAL(clearCache()),mPcb,SLOT(clearCache()));
 }
 
-/**
-  * @brief select a net
-  */
-void SimpleRouter::selectNet(CPcbNet *net, bool selected)
-{
-	net->setSelected(selected);
-	net->update();
-	pcb()->yield();				/* give up some CPU to the main app */
-}
-
-/**
-  * @brief Select nets for routing and push onto a stack.
-  */
-void SimpleRouter::select()
-{
-	netStack().clear();
-	if ( pcb() != NULL && pcb()->network() != NULL )
-	{
-		for(int n=0; running() && n < pcb()->network()->nets(); n++)
-		{
-			CPcbNet* net = pcb()->network()->net(n);
-			if ( !net->routed() )
-			{
-				netStack().push(net);
-				setState(Routing);
-			}
-		}
-	}
-	if (netStack().isEmpty())
-		stop();
-}
-
-
-/// spy on what A* is doing for debugging, open nodes
-void SimpleRouter::slotOpen(CGSegment* pt)
-{
-}
-
-/// spy on what A* is doing for debugging, closed nodes
-void SimpleRouter::slotClose(CGSegment* pt)
-{
-}
-
 /// draw a single rat line
-void SimpleRouter::drawRatLine(CGSegment* seg1, CGSegment* seg2)
+QGraphicsPathItem* SimpleRouter::drawRatLine()
 {
-	QPainterPath painterPath;
-	painterPath.moveTo( seg1->pos() );
-	painterPath.lineTo( seg2->pos() );
-	CSpecctraObject::globalScene()->addPath(painterPath);
+    mRatLine=NULL;
+    if ( mNet && mEndPoint[0] && mEndPoint[1] )
+    {
+        QPainterPath painterPath;
+        QPointF pointA = mEndPoint[0]->origin();
+        QPointF pointB = mEndPoint[1]->origin();
+        painterPath.moveTo( pointA );
+        painterPath.lineTo( pointB );
+        mRatLine = CSpecctraObject::globalScene()->addPath(painterPath);
+    }
+	return mRatLine;
 }
 
 /**
- * @brief Pop nets from the stack and route them in th eorder that they are popped off.
+ * @brief SimpleRouter::selectNet select the next net to route.
+ * @return 
+ */
+CPcbNet* SimpleRouter::selectNet()
+{
+    CPcbNet* rc=NULL;
+    CPcbNetwork* network = pcb()->network();
+    for(int n=0; !rc && n < network->nets(); n++)
+    {
+        CPcbNet* net = network->net(n);
+        if ( !net->routed() )
+        {
+            rc = net;
+        }
+    }
+    return rc;
+}
+
+/**
+ * @brief Collect two endpoints.
+ * @param points[] Array to contain the two end points as CPadStack pointers.
+ * @return true on success.
+ */
+bool SimpleRouter::endPoints()
+{
+    bool rc=false;
+    if ( !mNet->routed() )
+    {
+        for( int x=0; !rc && x < mNet->padstacks(); x++)
+        {
+            mEndPoint[0] = mNet->padstack(x);
+            if ( !mEndPoint[0]->routed() )
+            {
+                for( int y=0; !rc && y < mNet->padstacks(); y++)
+                {
+                    mEndPoint[1] = mNet->padstack(y);
+                    if ( mEndPoint[1] != mEndPoint[0] && 
+                         mEndPoint[1]->origin() != mEndPoint[0]->origin() && 
+                         !mEndPoint[1]->routed() )
+                    {
+                        rc = true;
+                    }
+                }
+            }
+        }
+    }
+    return rc;
+}
+
+/**
+ * @brief route this net
  */
 void SimpleRouter::route()
 {
-	if( netStack().count() )
-	{
-		CPcbNet* net = netStack().pop();
-		QList<CGPadstack*>& padstacks =	net->padstacksRef();
-        selectNet(net,true);
-
-		for( int n=0; running() && n < padstacks.count()-1; n++)
-		{
-			CGPadstack* padstack1 = padstacks[n];
-			CGPadstack* padstack2 = padstacks[n+1];
-            drawRatLine(padstack1,padstack2);
-            QObject::connect(padstack1,SIGNAL(signalOpen(CGSegment*)),this,SLOT(slotOpen(CGSegment*)));
-            QObject::connect(padstack1,SIGNAL(signalClose(CGSegment*)),this,SLOT(slotClose(CGSegment*)));
-            QObject::connect(padstack1,SIGNAL(status(QString)),this,SIGNAL(status(QString)));
-            padstack1->route(padstack2);
-            QObject::disconnect(padstack1,SIGNAL(signalOpen(CGSegment*)),this,SLOT(slotOpen(CGSegment*)));
-            QObject::disconnect(padstack1,SIGNAL(signalClose(CGSegment*)),this,SLOT(slotClose(CGSegment*)));
-            QObject::disconnect(padstack1,SIGNAL(status(QString)),this,SIGNAL(status(QString)));
-            emit status(currentStatus());
-		}
-		selectNet(net,false);
-	}
-	else
-	{
-		setState(Idle);
-	}
+    if ( !mNet->routed() )
+    {
+        mNet->sort();
+        if ( endPoints() )
+        {
+            drawRatLine();
+            path();
+            if ( mRatLine )
+            {
+                delete mRatLine;
+                mRatLine=NULL;
+            }
+            mEndPoint[0]=mEndPoint[1]=NULL;
+        }
+    }
 }
+
+/**
+ * @brief route a segment of this net.
+ */
+void SimpleRouter::path()
+{
+    for(int n=0; n < 100; n++)
+        pcb()->yield();
+}
+
 
 /**
   * @brief Run for a little bit.
@@ -270,14 +285,11 @@ bool SimpleRouter::exec()
 			rc=false;
 			break;
 		case Selecting:
-			select();
-			if ( running() )
-				setState(Routing);
+			setState( (mNet = selectNet()) ? Routing : Idle );
 			break;
 		case Routing:
 			route();
-			//if ( running() )
-			//	setState(Selecting);
+			setState(Selecting);
 			break;
 	}
 	return rc;

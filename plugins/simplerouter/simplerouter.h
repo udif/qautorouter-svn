@@ -14,11 +14,12 @@
 #include <QPoint>
 #include <QPointF>
 #include <QPainterPath>
+#include <QGraphicsPathItem>
 #include <cplugininterface.h>
 
 class CPcb;
 class CPcbNet;
-class CGSegment;
+class CGPadstack;
 class SimpleRouter : public QObject, public CPluginInterface
  {
     Q_OBJECT
@@ -44,7 +45,7 @@ class SimpleRouter : public QObject, public CPluginInterface
 
 	signals:
 		void						status(QString txt);			/** emit a status text */
-	protected:
+	private:
 
 		typedef enum {
 			Idle,													/** there is nothing happening */
@@ -57,20 +58,18 @@ class SimpleRouter : public QObject, public CPluginInterface
 		bool						running() {return state() != Idle;}
 		void						setState(tRunState state);
 		QString						currentStatus();				/** a brief status report for the status bar */
-
-		void						selectNet(CPcbNet* net,bool selected);
-		void						select();
-		void						route();
-		void						drawRatLine(CGSegment* seg1, CGSegment* seg2);
-		QStack<CPcbNet*>&			netStack()	{return mNetStack;}
-	private slots:
-        void						slotOpen(CGSegment* pt);
-        void						slotClose(CGSegment* pt);
-	private:
+        CPcbNet*                    selectNet();
+        bool                        endPoints();
+        QGraphicsPathItem*          drawRatLine();
+        void                        route();
+        void                        path();
+    private:
 		CPcb*						mPcb;
 		QDateTime					mStartTime;
 		tRunState					mState;
-		QStack<CPcbNet*>			mNetStack;						/** the current work stack */
+		CPcbNet*                    mNet;                           /** the current net */
+		CGPadstack*                 mEndPoint[2];                  /** current route end points */
+		QGraphicsPathItem*          mRatLine;                       /** The current rat line */
 };
 
 #endif // SIMPLEROUTER_H

@@ -48,39 +48,6 @@ QString CPcbNet::name()
 	}
 	return nm;
 }
-
-void CPcbNet::route(CGPadstack* endPoints[2])
-{
-    /* FIXME */
-}
-
-/**
-  * @brief route
-  */
-void CPcbNet::route()
-{
-    if ( !routed() )
-    {
-        CGPadstack* endPoints[2]; // deal with two end points at a time.
-        sort();
-        for( x=0; x < padstacks(); x++)
-        {
-            endPoints[0] = padstack(x);
-            if ( !endPoints[0]->routed() )
-            {
-                for(y=0; y < padstacks(); y++)
-                {
-                    endPoints[1] = padstack(y);
-                    if ( !endPoints[1]->routed() )
-                    {
-                        route(endPoints);
-                    }
-                }
-            }
-        }
-    }
-}
-
 /**
   * @brief determine of the net is routed.
   */

@@ -49,11 +49,9 @@ class CPcbNet : public CSpecctraObject
 		virtual QPainterPath		shape() const;
         virtual void				paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
 
-        void                        route();
         bool						routed();
 
     protected:
-        void                        route(CGPadstack* endPoints[2]);
 		CGPadstack*					closest(int n,QPointF pt);
 		CGPadstack*					farthest(int n,QPointF pt);
 		void						swap(CGPadstack* p1,CGPadstack* p2);
