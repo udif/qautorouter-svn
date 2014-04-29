@@ -28,33 +28,7 @@
 #include <QPainterPath>
 #include <QGraphicsPathItem>
 #include <cplugininterface.h>
-
-class SimpleRouterNode
-{
-    friend class SimpleRouter;
-    SimpleRouterNode() 
-    : mPos(0,0)
-    , mGScore(0.0)
-    , mFScore(0.0)
-    , mLayer(0)
-    {}
-    SimpleRouterNode(QPointF pos,int layer=0) 
-    : mPos(pos)
-    , mGScore(0.0)
-    , mFScore(0.0)
-    , mLayer(layer)
-    {}    
-    SimpleRouterNode(const SimpleRouterNode& other)
-    : mPos(other.mPos)
-    , mGScore(other.mGScore)
-    , mFScore(other.mFScore)
-    , mLayer(other.mLayer)
-    {}
-    QPointF mPos;           // position point
-    double  mGScore;        // tentative estimate
-    double  mFScore;        // heuristic cost estimate
-    int     mLayer;         // layer index
-};
+#include <simplerouternode.h>
 
 class CPcb;
 class CPcbNet;

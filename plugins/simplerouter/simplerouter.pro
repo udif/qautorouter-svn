@@ -12,7 +12,8 @@ unix {
 	target.path = /opt/qautorouter/plugins
 	INSTALLS += target
 }
-SOURCES += simplerouter.cpp
+SOURCES += simplerouter.cpp \
+    simplerouternode.cpp
 HEADERS += simplerouter.h \
     simplerouternode.h
 OTHER_FILES += README.txt \
