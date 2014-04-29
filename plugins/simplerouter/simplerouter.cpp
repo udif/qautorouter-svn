@@ -224,8 +224,10 @@ bool SimpleRouter::endPoints()
                 for( int y=0; !rc && y < mNet->padstacks(); y++)
                 {
                     mEndPoint[1] = mNet->padstack(y);
-                    if ( mEndPoint[1] != mEndPoint[0] && 
-                         mEndPoint[1]->origin() != mEndPoint[0]->origin() && 
+                    if ( mEndPoint[1] != mEndPoint[0] &&
+                         ( (mEndPoint[1]->layer() != mEndPoint[0]->layer()) ||
+                             (mEndPoint[1]->layer() == mEndPoint[0]->layer() && 
+                                mEndPoint[1]->origin() != mEndPoint[0]->origin()) ) && 
                          !mEndPoint[1]->routed() )
                     {
                         rc = true;
