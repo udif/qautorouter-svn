@@ -32,6 +32,12 @@ bool SimpleRouterNode::operator!=(const SimpleRouterNode& other) const
     return mPos.x() != other.mPos.x() || mPos.y() != other.mPos.y();
 }
 
+SimpleRouterNode& SimpleRouterNode::operator=(const QPointF& other)
+{
+    mPos = other;
+    return *this;
+}
+
 bool SimpleRouterNode::operator==(const QPointF& other) const
 {
     return mPos.x() == other.x() && mPos.y() == other.y();

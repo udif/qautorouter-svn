@@ -57,6 +57,8 @@ class SimpleRouterNode
         SimpleRouterNode&       operator=(const SimpleRouterNode& other);
         bool                    operator==(const SimpleRouterNode& other) const;
         bool                    operator!=(const SimpleRouterNode& other) const;
+
+        SimpleRouterNode&       operator=(const QPointF& other);
         bool                    operator==(const QPointF& other) const;
         bool                    operator!=(const QPointF& other) const;
 
@@ -67,6 +69,7 @@ class SimpleRouterNode
         void					setPos(int x, int y)    		{mPos.setX(x),mPos.setY(y);}
         void					setPos(QPointF pos)				{mPos=pos;}
         QPointF					pos()							{return mPos;}
+
     private:
         QPointF mPos;           // position point
         double  mGScore;        // tentative estimate
