@@ -85,7 +85,7 @@ class SimpleRouter : public QObject, public CPluginInterface
 		CGPadstack*                 mEndPoint[2];                   /** current route end points */
 		QGraphicsPathItem*          mRatLine;                       /** The current rat line */
 		QList<SimpleRouterNode>     mOpenList;
-		QList<SimpleRouterNode>     mClosedList;
+        QMap<double,SimpleRouterNode>     mClosedList;              /** closed nodes ordered by cost */
 };
 
 #endif // SIMPLEROUTER_H
