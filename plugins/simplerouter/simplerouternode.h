@@ -35,32 +35,41 @@ class SimpleRouterNode
     public:
         SimpleRouterNode()
         : mPos(0,0)
-        , mGScore(0.0)
-        , mFScore(0.0)
+        , mScore(0.0)
         , mLayer(0)
         {}
 
         SimpleRouterNode(QPointF pos,int layer=0)
         : mPos(pos)
-        , mGScore(0.0)
-        , mFScore(0.0)
+        , mScore(0.0)
         , mLayer(layer)
         {}
 
         SimpleRouterNode(const SimpleRouterNode& other)
         : mPos(other.mPos)
-        , mGScore(other.mGScore)
-        , mFScore(other.mFScore)
+        , mScore(other.mScore)
         , mLayer(other.mLayer)
         {}
 
+        /* node assignment/equality */
         SimpleRouterNode&       operator=(const SimpleRouterNode& other);
         bool                    operator==(const SimpleRouterNode& other) const;
         bool                    operator!=(const SimpleRouterNode& other) const;
 
+        /* point assignment/equality */
         SimpleRouterNode&       operator=(const QPointF& other);
         bool                    operator==(const QPointF& other) const;
         bool                    operator!=(const QPointF& other) const;
+
+        /* score assignment/comparators */
+        SimpleRouterNode&       operator=(const double& other);
+        bool                    operator==(const double& other) const;
+        bool                    operator!=(const double& other) const;
+        bool                    operator>=(const double& other) const;
+        bool                    operator<=(const double& other) const;
+        bool                    operator>(const double& other) const;
+        bool                    operator<(const double& other) const;
+
 
         int                     x()								{return mPos.x();}
         int                     y()								{return mPos.y();}
@@ -69,11 +78,12 @@ class SimpleRouterNode
         void					setPos(int x, int y)    		{mPos.setX(x),mPos.setY(y);}
         void					setPos(QPointF pos)				{mPos=pos;}
         QPointF					pos()							{return mPos;}
+        void                    setScore(double score)          {mScore = score;}
+        double                  score()                         {return mScore;}
 
     private:
         QPointF mPos;           // position point
-        double  mGScore;        // tentative estimate
-        double  mFScore;        // heuristic cost estimate
+        double  mScore;         // tentative estimate
         int     mLayer;         // layer index
 };
 

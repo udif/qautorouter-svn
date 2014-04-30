@@ -42,14 +42,14 @@ class SimpleRouter : public QObject, public CPluginInterface
 	public:
 		friend class CSegmentState;
 
-		virtual tPluginType			type();							/* is the a router or post-router */
+        virtual tPluginType			type();							/** is the a router or post-router */
 
-		virtual QString				title() const;					/* a brief name for the plugin */
-		virtual QString				version() const;				/* return a version number string */
-		virtual QStringList			credits() const;				/* name of authors + email */
-		virtual QString				website() const;				/* the author's website */
-		virtual QString				description() const;			/* a brief description of the plugin */
-		virtual QStringList			license() const;				/* the license text for the plugin */
+        virtual QString				title() const;					/** a brief name for the plugin */
+        virtual QString				version() const;				/** return a version number string */
+        virtual QStringList			credits() const;				/** name of authors + email */
+        virtual QString				website() const;				/** the author's website */
+        virtual QString				description() const;			/** a brief description of the plugin */
+        virtual QStringList			license() const;				/** the license text for the plugin */
 
 		virtual bool				start(CPcb* pcb);				/** initialize, gets' called once prior to exec() being called */
 		virtual void				stop();							/** stop processing */
@@ -58,6 +58,7 @@ class SimpleRouter : public QObject, public CPluginInterface
 
 	signals:
 		void						status(QString txt);			/** emit a status text */
+
 	private:
 
 		typedef enum {

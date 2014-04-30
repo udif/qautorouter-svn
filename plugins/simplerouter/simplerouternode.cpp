@@ -19,6 +19,8 @@
 SimpleRouterNode& SimpleRouterNode::operator=(const SimpleRouterNode& other)
 {
     mPos = other.mPos;
+    mScore = other.mScore;
+    mLayer = other.mLayer;
     return *this;
 }
 
@@ -46,6 +48,42 @@ bool SimpleRouterNode::operator==(const QPointF& other) const
 bool SimpleRouterNode::operator!=(const QPointF& other) const
 {
     return mPos.x() != other.x() || mPos.y() != other.y();
+}
+
+SimpleRouterNode& SimpleRouterNode::operator=(const double& other)
+{
+    mScore = other;
+    return *this;
+}
+
+bool SimpleRouterNode::operator==(const double& other) const
+{
+    return mScore == other;
+}
+
+bool SimpleRouterNode::operator!=(const double& other) const
+{
+    return mScore != other;
+}
+
+bool SimpleRouterNode::operator>=(const double& other) const
+{
+    return mScore >= other;
+}
+
+bool SimpleRouterNode::operator<=(const double& other) const
+{
+    return mScore <= other;
+}
+
+bool SimpleRouterNode::operator>(const double& other) const
+{
+    return mScore > other;
+}
+
+bool SimpleRouterNode::operator<(const double& other) const
+{
+    return mScore < other;
 }
 
 
