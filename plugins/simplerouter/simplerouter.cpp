@@ -278,31 +278,31 @@ void SimpleRouter::route()
 /**
  * @brief route a segment of this net.
  */
-void SimpleRouter::path()
+QList<SimpleRouterNode>& SimpleRouter::path()
 {
 	QEventLoop loop;
 	int loopcounter=0;
 	int idx;
-	QList<SimpleRouterNode> rc;
 	SimpleRouterNode node(mEndPoint[0]->pos(),mEndPoint[0]->layer()->index());
 	insort(mOpenList,node);
-	while(!mOpenList.isEmpty() && (node = mOpenList.takeFirst()) != mGoalPt )
+    while(!mOpenList.isEmpty() && mOpenList.at(0) != mEndPoint[1]->pos() )
 	{
+        node = mOpenList.takeFirst();
 		if (++loopcounter >= 10)
 		{
 			loop.processEvents();
 			loopcounter=0;
 		}
-		QList<CAStarNode> children = childList(node);
+        QList<SimpleRouterNode> children = neighbours(node);
 		for(int n=0; n < children.count(); n++)
 		{
-			CAStarNode child = children[n];
+            SimpleRouterNode child = children[n];
 			// child node already in the open list?
 			int oIdx = mOpenList.indexOf(child);
 			if ( oIdx >=0 )
 			{
 				// the existing node is better?
-				CAStarNode other = mOpenList[oIdx];
+                SimpleRouterNode other = mOpenList[oIdx];
 				if ( other <= child )
 					continue;
 			}
@@ -311,7 +311,7 @@ void SimpleRouter::path()
 			if ( cIdx >= 0 )
 			{
 				// the existing node is better?
-				CAStarNode other = mClosedList[cIdx];
+                SimpleRouterNode other = mClosedList[cIdx];
 				if ( other <= child )
 					continue;
 			}
@@ -326,11 +326,11 @@ void SimpleRouter::path()
 		}
 		close(node);
 	}
-	// follow parent nodes from goal back to start
+    // FIXME FIXME was: follow parent nodes from goal back to start
 	do
 	{
-		CAStarNode other(node.parent());
-		rc.append(node);
+        SimpleRouterNode other(node.parent());
+		mPath.append(node);
 		if ( ( idx = mClosedList.indexOf( other ) ) >= 0 )
 			other = mClosedList.takeAt(idx);
 		else
@@ -339,8 +339,20 @@ void SimpleRouter::path()
 		else
 			break;
 		node = other;
-	} while( !isEmpty(node.pos()) );
-	return rc;
+	} while( node.parent() != NULL );
+	return mPath;
+}
+
+/**
+ * @brief Retrieve a list of neighbours of the node that do not collide with uncollidable objects.
+ * @param node The nod ein question.
+ * @return A list of the potential move directions.
+ */
+QList<SimpleRouterNode> SimpleRouter::neighbours(SimpleRouterNode node)
+{
+    QList<SimpleRouterNode>  rc;
+    /** TODO - write code here */
+    return rc;
 }
 
 /**
@@ -348,7 +360,7 @@ void SimpleRouter::path()
  * @param list The list to which to insort.
  * @param node The insorted node.
  */
-void insort(QList<SimpleRouterNode>& list, SimpleRouterNode& node)
+void SimpleRouter::insort(QList<SimpleRouterNode>& list, SimpleRouterNode& node)
 {
 	int idx = list.indexOf(node);
 	if ( idx < 0 ) // insorted already?
@@ -366,6 +378,84 @@ void insort(QList<SimpleRouterNode>& list, SimpleRouterNode& node)
 	}
 
 }
+
+/**
+ * @brief Make a copy of the node into the open list
+ * @param node The source node to copy from 
+ */
+void SimpleRouter::open(SimpleRouterNode& node)
+{
+	insort(mOpenList,node);
+}
+
+/**
+ * @brief Make a copy of the node into the open list
+ * @param node The source node to copy from 
+ */
+void SimpleRouter::close(SimpleRouterNode& node)
+{
+	insort(mClosedList,node);
+}
+
+/**
+ * @brief Calculate the sum of the absolute values of x() and y(), traditionally known as the "Manhattan length"
+ *        of the vector from the point A to point B.
+ */
+double SimpleRouter::manhattanLength(QPointF a, QPointF b)
+{
+	QPointF delta = (b - a);
+	return delta.manhattanLength();
+}
+
+/** 
+ * @brief Calculate the cost between two adjacent points.
+ *        We will assign a cost of 10 to each horizontal or vertical square moved, and a cost of 14.14 for a diagonal move.
+ *        We use these numbers because the actual distance to move diagonally is the square root of 2,
+ *        or roughly 1.414 times the cost of moving horizontally or vertically.
+ */
+double SimpleRouter::adjacentCost(QPointF a, QPointF b)
+{
+	double diffX = fabs(a.x()-b.x());
+	double diffY = fabs(a.y()-b.y());
+	double rc = ( diffX && diffY ) ? 14.14 : 10.0;
+	return rc;
+}
+
+/**
+ * @brief Calculate the cost of this node
+ * @param node
+ * @param parent
+ */
+double SimpleRouter::cost(SimpleRouterNode node)
+{
+	double rc = g(node) + h(node);
+	return rc;
+}
+
+/** 
+ * @brief Calculate G, the movement cost to move from the starting point A
+ *         to this cell of the grid, following the path generated to get there.
+ */
+double SimpleRouter::g(SimpleRouterNode node)
+{
+	double rc=0.0;
+	while( node.parent() != NULL )
+	{
+		rc += adjacentCost( node.parent()->pos(), node.pos() );
+		node = *node.parent();
+	}
+	return rc;
+}
+
+/**
+ * @brief The estimated movement cost to move from that given square on the grid to the final destination
+ */
+double SimpleRouter::h(SimpleRouterNode node)
+{
+	double rc = manhattanLength( node.pos(), mEndPoint[1]->pos() ) * 10.0;
+	return rc;
+}
+
 
 /**
   * @brief Run for a little bit.

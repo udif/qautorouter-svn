@@ -18,6 +18,7 @@
 
 SimpleRouterNode& SimpleRouterNode::operator=(const SimpleRouterNode& other)
 {
+    mParent = other.mParent;
     mPos = other.mPos;
     mScore = other.mScore;
     mLayer = other.mLayer;
@@ -91,17 +92,17 @@ bool SimpleRouterNode::operator>=(const SimpleRouterNode& other) const
     return mScore >= other.mScore;
 }
 
-bool SimpleRouterNode::SimpleRouterNode::operator<=(const SimpleRouterNode& other) const
+bool SimpleRouterNode::operator<=(const SimpleRouterNode& other) const
 {
     return mScore <= other.mScore;
 }
 
-bool SimpleRouterNode::SimpleRouterNode::operator>(const SimpleRouterNode& other) const
+bool SimpleRouterNode::operator>(const SimpleRouterNode& other) const
 {
     return mScore > other.mScore;
 }
 
-bool SimpleRouterNode::SimpleRouterNode::operator<(const SimpleRouterNode& other) const
+bool SimpleRouterNode::operator<(const SimpleRouterNode& other) const
 {
     return mPos.x() != other.mPos.x() || mPos.y() != other.mPos.y();
 }

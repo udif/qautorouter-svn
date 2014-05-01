@@ -31,22 +31,24 @@
 
 class SimpleRouterNode
 {
-        friend class SimpleRouter;
     public:
-        SimpleRouterNode()
-        : mPos(0,0)
+        SimpleRouterNode(SimpleRouterNode* parent=NULL)
+        : mParent(parent)
+        , mPos(0,0)
         , mScore(0.0)
         , mLayer(0)
         {}
 
         SimpleRouterNode(QPointF pos,int layer=0)
-        : mPos(pos)
+        : mParent(NULL)
+        , mPos(pos)
         , mScore(0.0)
         , mLayer(layer)
         {}
 
         SimpleRouterNode(const SimpleRouterNode& other)
-        : mPos(other.mPos)
+        : mParent(other.mParent)
+        , mPos(other.mPos)
         , mScore(other.mScore)
         , mLayer(other.mLayer)
         {}
@@ -69,22 +71,29 @@ class SimpleRouterNode
         bool                    operator<=(const double& other) const;
         bool                    operator>(const double& other) const;
         bool                    operator<(const double& other) const;
+        bool                    operator>=(const SimpleRouterNode& other) const;
+        bool                    operator<=(const SimpleRouterNode& other) const;
+        bool                    operator>(const SimpleRouterNode& other) const;
+        bool                    operator<(const SimpleRouterNode& other) const;
 
-
-        int                     x()								{return mPos.x();}
-        int                     y()								{return mPos.y();}
-        void					setX(double x)                 	{mPos.setX(x);}
-        void					setY(double y)         			{mPos.setY(y);}
-        void					setPos(int x, int y)    		{mPos.setX(x),mPos.setY(y);}
-        void					setPos(QPointF pos)				{mPos=pos;}
-        QPointF					pos()							{return mPos;}
-        void                    setScore(double score)          {mScore = score;}
-        double                  score()                         {return mScore;}
+        /* property setters/getters */
+        void                    setParent(SimpleRouterNode* parent) {mParent=parent;}
+        SimpleRouterNode*       parent()                            {return mParent;}
+        int                     x()                                 {return mPos.x();}
+        int                     y()                                 {return mPos.y();}
+        void					setX(double x)                      {mPos.setX(x);}
+        void					setY(double y)                      {mPos.setY(y);}
+        void					setPos(int x, int y)                {mPos.setX(x),mPos.setY(y);}
+        void					setPos(QPointF pos)                 {mPos=pos;}
+        QPointF					pos()                               {return mPos;}
+        void                    setScore(double score)              {mScore = score;}
+        double                  score()                             {return mScore;}
 
     private:
-        QPointF mPos;           // position point
-        double  mScore;         // tentative estimate
-        int     mLayer;         // layer index
+        SimpleRouterNode*       mParent;        // parent node
+        QPointF                 mPos;           // position point
+        double                  mScore;         // tentative estimate
+        int                     mLayer;         // layer index
 };
 
 

@@ -76,7 +76,16 @@ class SimpleRouter : public QObject, public CPluginInterface
         bool                        endPoints();
         QGraphicsPathItem*          drawRatLine();
         void                        route();
-        void                        path();
+        QList<SimpleRouterNode>&    path();
+        QList<SimpleRouterNode>     neighbours(SimpleRouterNode node);
+        void                        open(SimpleRouterNode& node);
+		void                        close(SimpleRouterNode& node);
+		double                      manhattanLength(QPointF a, QPointF b);
+        double                      adjacentCost(QPointF a, QPointF b);
+        double                      cost(SimpleRouterNode node);
+        double                      g(SimpleRouterNode node);
+        double                      h(SimpleRouterNode node);
+
     private:
         void                        insort(QList<SimpleRouterNode>& list, SimpleRouterNode& node);
 
@@ -87,7 +96,8 @@ class SimpleRouter : public QObject, public CPluginInterface
 		CGPadstack*                 mEndPoint[2];                   /** current route end points */
 		QGraphicsPathItem*          mRatLine;                       /** The current rat line */
 		QList<SimpleRouterNode>     mOpenList;
-        QList<SimpleRouterNode>     mClosedList;              /** closed nodes ordered by cost */
+        QList<SimpleRouterNode>     mClosedList;                    /** closed nodes ordered by cost */
+        QList<SimpleRouterNode>     mPath;                          /** The resulting path */
 };
 
 #endif // SIMPLEROUTER_H
