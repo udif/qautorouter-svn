@@ -86,4 +86,24 @@ bool SimpleRouterNode::operator<(const double& other) const
     return mScore < other;
 }
 
+bool SimpleRouterNode::operator>=(const SimpleRouterNode& other) const
+{
+    return mScore >= other.mScore;
+}
+
+bool SimpleRouterNode::SimpleRouterNode::operator<=(const SimpleRouterNode& other) const
+{
+    return mScore <= other.mScore;
+}
+
+bool SimpleRouterNode::SimpleRouterNode::operator>(const SimpleRouterNode& other) const
+{
+    return mScore > other.mScore;
+}
+
+bool SimpleRouterNode::SimpleRouterNode::operator<(const SimpleRouterNode& other) const
+{
+    return mPos.x() != other.mPos.x() || mPos.y() != other.mPos.y();
+}
+
 

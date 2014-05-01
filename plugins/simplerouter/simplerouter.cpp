@@ -29,9 +29,11 @@
 #include <cgpadstack.h>
 #include <cpcbplacement.h>
 #include <cpcbplace.h>
+#include <cpcblayer.h>
 
 #include <QPolygonF>
 #include <QVector>
+#include <QEventLoop>
 
 /**
   * @return plugin type
@@ -278,10 +280,92 @@ void SimpleRouter::route()
  */
 void SimpleRouter::path()
 {
-    for(int n=0; n < 100; n++)
-        pcb()->yield();
+	QEventLoop loop;
+	int loopcounter=0;
+	int idx;
+	QList<SimpleRouterNode> rc;
+	SimpleRouterNode node(mEndPoint[0]->pos(),mEndPoint[0]->layer()->index());
+	insort(mOpenList,node);
+	while(!mOpenList.isEmpty() && (node = mOpenList.takeFirst()) != mGoalPt )
+	{
+		if (++loopcounter >= 10)
+		{
+			loop.processEvents();
+			loopcounter=0;
+		}
+		QList<CAStarNode> children = childList(node);
+		for(int n=0; n < children.count(); n++)
+		{
+			CAStarNode child = children[n];
+			// child node already in the open list?
+			int oIdx = mOpenList.indexOf(child);
+			if ( oIdx >=0 )
+			{
+				// the existing node is better?
+				CAStarNode other = mOpenList[oIdx];
+				if ( other <= child )
+					continue;
+			}
+			// child node already in the closed list?
+			int cIdx = mClosedList.indexOf(child);
+			if ( cIdx >= 0 )
+			{
+				// the existing node is better?
+				CAStarNode other = mClosedList[cIdx];
+				if ( other <= child )
+					continue;
+			}
+			// remove child from open and closed lists
+			if ( oIdx >= 0 )
+				mOpenList.takeAt(oIdx);
+			if ( cIdx >= 0 )
+				mClosedList.takeAt(cIdx);
+			// add child to open list
+			open(child);
+
+		}
+		close(node);
+	}
+	// follow parent nodes from goal back to start
+	do
+	{
+		CAStarNode other(node.parent());
+		rc.append(node);
+		if ( ( idx = mClosedList.indexOf( other ) ) >= 0 )
+			other = mClosedList.takeAt(idx);
+		else
+		if ( ( idx = mOpenList.indexOf( other ) ) >= 0 )
+			other = mOpenList.takeAt(idx);
+		else
+			break;
+		node = other;
+	} while( !isEmpty(node.pos()) );
+	return rc;
 }
 
+/**
+ * @brief insort a node into a list in sorted by cost method.
+ * @param list The list to which to insort.
+ * @param node The insorted node.
+ */
+void insort(QList<SimpleRouterNode>& list, SimpleRouterNode& node)
+{
+	int idx = list.indexOf(node);
+	if ( idx < 0 ) // insorted already?
+	{
+		for(int n=0; n < list.length(); n++)
+		{
+			SimpleRouterNode other = list[n];
+			if ( node < other )
+			{
+				list.insert(n,node);
+				return;
+			}
+		}
+		list.append(node);
+	}
+
+}
 
 /**
   * @brief Run for a little bit.
