@@ -32,9 +32,9 @@
 class SimpleRouterNode
 {
     public:
-        SimpleRouterNode(SimpleRouterNode* parent=NULL)
+        SimpleRouterNode(SimpleRouterNode* parent=NULL,QPointF pos=QPointF(0,0))
         : mParent(parent)
-        , mPos(0,0)
+        , mPos(pos)
         , mScore(0.0)
         , mLayer(0)
         {}

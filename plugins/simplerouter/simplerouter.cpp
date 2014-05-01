@@ -283,7 +283,7 @@ QList<SimpleRouterNode>& SimpleRouter::path()
 	QEventLoop loop;
 	int loopcounter=0;
 	int idx;
-	SimpleRouterNode node(mEndPoint[0]->pos(),mEndPoint[0]->layer()->index());
+	SimpleRouterNode node(mEndPoint[0]->pos(), 0 /* mEndPoint[0]->layer()->index() */ ); /* FIXME */
 	insort(mOpenList,node);
     while(!mOpenList.isEmpty() && mOpenList.at(0) != mEndPoint[1]->pos() )
 	{
@@ -350,9 +350,17 @@ QList<SimpleRouterNode>& SimpleRouter::path()
  */
 QList<SimpleRouterNode> SimpleRouter::neighbours(SimpleRouterNode node)
 {
-    QList<SimpleRouterNode>  rc;
-    /** TODO - write code here */
-    return rc;
+	QList<SimpleRouterNode> rc;
+	for(int x=-1; x<=1; x++)
+	{
+		for(int y=-1; y<=1; y++)
+		{
+			SimpleRouterNode child(QPointF(node.pos().x()+x,node.pos().y()+y));
+            child.setScore( cost( child ) );
+            rc.append(child);
+		}
+	}
+	return rc;
 }
 
 /**
