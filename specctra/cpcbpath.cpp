@@ -79,7 +79,7 @@ QPainterPath CPcbPath::shape()
 		QPointF pt(properties().at(n).toDouble(),properties().at(n+1).toDouble());
 		ppath.lineTo(pt);
 	}
-	//path.lineTo(startPt);
+	//ppath.lineTo(startPt);
 	return ppath;
 }
 

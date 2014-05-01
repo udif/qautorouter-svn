@@ -283,9 +283,9 @@ QList<SimpleRouterNode>& SimpleRouter::path()
 	QEventLoop loop;
 	int loopcounter=0;
 	int idx;
-	SimpleRouterNode node(mEndPoint[0]->pos(), 0 /* mEndPoint[0]->layer()->index() */ ); /* FIXME */
+	SimpleRouterNode node(mEndPoint[0]->pad(mEndPoint[0]->layer()->name())->pos(), 0 /* mEndPoint[0]->layer()->index() */ );
 	insort(mOpenList,node);
-    while(!mOpenList.isEmpty() && mOpenList.at(0) != mEndPoint[1]->pos() )
+    while(!mOpenList.isEmpty() && mOpenList.at(0) != mEndPoint[1]->pad(mEndPoint[1]->layer()->name())->pos() )
 	{
         node = mOpenList.takeFirst();
 		if (++loopcounter >= 10)
