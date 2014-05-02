@@ -306,19 +306,19 @@ QList<SimpleRouterNode>& SimpleRouter::path()
 {
 	QEventLoop loop;
 	int idx;
-	SimpleRouterNode node(mEndPoint[0]->origin(), 0 /* mEndPoint[0]->layer()->index() */ ); /* FIXME */
+	SimpleRouterNode* node = new SimpleRouterNode(mEndPoint[0]->origin(), 0 /* mEndPoint[0]->layer()->index() */ ); /* FIXME */
 	mPath.clear();
-	mOpenList.clear();
-	mClosedList.clear();
+	clear(mOpenList);
+	clear(mClosedList);
 	insort(mOpenList,node);
-    while(!mOpenList.isEmpty() && mOpenList.at(0) != mEndPoint[1]->origin() )
+    while(!mOpenList.isEmpty() && mOpenList.at(0)->origin() != mEndPoint[1]->origin() )
 	{
         node = mOpenList.takeFirst();
         loop.processEvents();
-        QList<SimpleRouterNode> children = neighbours(node);
+        QList<SimpleRouterNode*> children = neighbours(node);
 		for(int n=0; n < children.count(); n++)
 		{
-            SimpleRouterNode child = children[n];
+            SimpleRouterNode* child = children[n];
 			int oIdx = mOpenList.indexOf(child);            // child node already in the open list?
 			if ( oIdx >=0 )
 			{
@@ -334,17 +334,34 @@ QList<SimpleRouterNode>& SimpleRouter::path()
 					continue;
 			}
 			if ( oIdx >= 0 )                                // remove child from open and closed lists
-				mOpenList.takeAt(oIdx);
+			{
+				delete mOpenList.takeAt(oIdx);
+            }
 			if ( cIdx >= 0 )
-				mClosedList.takeAt(cIdx);
+			{
+				delete mClosedList.takeAt(cIdx);
+            }
 			open(child);                                    // add child to open list
 		}
 		close(node);
 	}
+	do
+	{
+		mPath.append(*node);
+		if ( ( idx = mClosedList.indexOf( other ) ) >= 0 )
+			other = mClosedList.takeAt(idx);
+		else
+		if ( ( idx = mOpenList.indexOf( other ) ) >= 0 )
+			other = mOpenList.takeAt(idx);
+		else
+			break;
+        node = node->parent();
+	} while( node->parent() != NULL );
+	
     // FIXME FIXME was: follow parent nodes from goal back to start
 	do
 	{
-        SimpleRouterNode other(node.parent());
+        SimpleRouterNode other(node->parent());
 		mPath.append(node);
 		if ( ( idx = mClosedList.indexOf( other ) ) >= 0 )
 			other = mClosedList.takeAt(idx);
@@ -363,7 +380,7 @@ QList<SimpleRouterNode>& SimpleRouter::path()
  * @param node The nod ein question.
  * @return A list of the potential move directions.
  */
-QList<SimpleRouterNode> SimpleRouter::neighbours(SimpleRouterNode node)
+QList<SimpleRouterNode*> SimpleRouter::neighbours(SimpleRouterNode* node)
 {
 	QList<SimpleRouterNode> rc;
 	for(int x=-1; x<=1; x++)
@@ -387,7 +404,7 @@ QList<SimpleRouterNode> SimpleRouter::neighbours(SimpleRouterNode node)
  * @param list The list to which to insort.
  * @param node The insorted node.
  */
-void SimpleRouter::insort(QList<SimpleRouterNode>& list, SimpleRouterNode& node)
+void SimpleRouter::insort(QList<SimpleRouterNode*>& list, SimpleRouterNode* node)
 {
 	int idx = list.indexOf(node);
 	if ( idx < 0 ) // insorted already?
@@ -410,7 +427,7 @@ void SimpleRouter::insort(QList<SimpleRouterNode>& list, SimpleRouterNode& node)
  * @brief Make a copy of the node into the open list
  * @param node The source node to copy from 
  */
-void SimpleRouter::open(SimpleRouterNode& node)
+void SimpleRouter::open(SimpleRouterNode* node)
 {
 	insort(mOpenList,node);
 }
@@ -419,9 +436,22 @@ void SimpleRouter::open(SimpleRouterNode& node)
  * @brief Make a copy of the node into the open list
  * @param node The source node to copy from 
  */
-void SimpleRouter::close(SimpleRouterNode& node)
+void SimpleRouter::close(SimpleRouterNode* node)
 {
 	insort(mClosedList,node);
+}
+
+/**
+ * @brief Clear a list of node points. Deleting each node.
+ * @param nodes A list of node pointers.
+ */
+void SimpleRouter::clear(QList<SimpleRouterNode*>& nodes)
+{
+    while(nodes.count())
+    {
+        SimpleRouterNode* node = nodes.takeLast();
+        delete node;
+    }
 }
 
 /**
@@ -466,10 +496,11 @@ double SimpleRouter::cost(SimpleRouterNode node)
 double SimpleRouter::g(SimpleRouterNode node)
 {
 	double rc=0.0;
-	while( node.parent() != NULL )
+	SimpleRouterNode* parent = node.parent();
+	while( parent != NULL && parent != parent->parent() )
 	{
-		rc += adjacentCost( node.parent()->origin(), node.origin() );
-		node = *node.parent();
+		rc += adjacentCost( parent->origin(), node.origin() );
+		parent = parent->parent();
 	}
 	return rc;
 }

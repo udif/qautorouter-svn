@@ -33,11 +33,14 @@ SimpleRouterNode::SimpleRouterNode(QPointF origin,int layer)
 }
 
 SimpleRouterNode::SimpleRouterNode(const SimpleRouterNode& other)
-: mParent(other.mParent)
-, mOrigin(other.mOrigin)
-, mScore(other.mScore)
-, mLayer(other.mLayer)
 {
+    if ( &other != this )
+    {
+        mParent = other.mParent;
+        mOrigin = other.mOrigin;
+        mScore = other.mScore;
+        mLayer = other.mLayer;
+    }
 }
 
 

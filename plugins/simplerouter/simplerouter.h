@@ -78,9 +78,10 @@ class SimpleRouter : public QObject, public CPluginInterface
         QGraphicsPathItem*          drawRatLine(QList<SimpleRouterNode> path);
         void                        route();
         QList<SimpleRouterNode>&    path();
-        QList<SimpleRouterNode>     neighbours(SimpleRouterNode node);
-        void                        open(SimpleRouterNode& node);
-		void                        close(SimpleRouterNode& node);
+        QList<SimpleRouterNode*>    neighbours(SimpleRouterNode* node);
+        void                        open(SimpleRouterNode* node);
+		void                        close(SimpleRouterNode* node);
+		void                        clear(QList<SimpleRouterNode*>& nodes);
 		double                      manhattanLength(QPointF a, QPointF b);
         double                      adjacentCost(QPointF a, QPointF b);
         double                      cost(SimpleRouterNode node);
@@ -88,7 +89,7 @@ class SimpleRouter : public QObject, public CPluginInterface
         double                      h(SimpleRouterNode node);
 
     private:
-        void                        insort(QList<SimpleRouterNode>& list, SimpleRouterNode& node);
+        void                        insort(QList<SimpleRouterNode*>& list, SimpleRouterNode* node);
 
 		CPcb*						mPcb;
 		QDateTime					mStartTime;
@@ -96,8 +97,8 @@ class SimpleRouter : public QObject, public CPluginInterface
 		CPcbNet*                    mNet;                           /** the current net */
 		CGPadstack*                 mEndPoint[2];                   /** current route end points */
 		QGraphicsPathItem*          mRatLine;                       /** The current rat line */
-		QList<SimpleRouterNode>     mOpenList;
-        QList<SimpleRouterNode>     mClosedList;                    /** closed nodes ordered by cost */
+		QList<SimpleRouterNode*>    mOpenList;
+        QList<SimpleRouterNode*>    mClosedList;                    /** closed nodes ordered by cost */
         QList<SimpleRouterNode>     mPath;                          /** The resulting path */
 };
 
