@@ -16,39 +16,67 @@
 *******************************************************************************/
 #include "simplerouternode.h"
 
+SimpleRouterNode::SimpleRouterNode(SimpleRouterNode* parent,QPointF origin)
+: mParent(parent)
+, mOrigin(origin)
+, mScore(0.0)
+, mLayer(0)
+{
+}
+
+SimpleRouterNode::SimpleRouterNode(QPointF origin,int layer)
+: mParent(NULL)
+, mOrigin(origin)
+, mScore(0.0)
+, mLayer(layer)
+{
+}
+
+SimpleRouterNode::SimpleRouterNode(const SimpleRouterNode& other)
+: mParent(other.mParent)
+, mOrigin(other.mOrigin)
+, mScore(other.mScore)
+, mLayer(other.mLayer)
+{
+}
+
+
 SimpleRouterNode& SimpleRouterNode::operator=(const SimpleRouterNode& other)
 {
-    mParent = other.mParent;
-    mPos = other.mPos;
-    mScore = other.mScore;
-    mLayer = other.mLayer;
+    if ( &other != this )
+    {
+        mParent = other.mParent;
+        mOrigin = other.mOrigin;
+        mScore = other.mScore;
+        mLayer = other.mLayer;
+    }
     return *this;
 }
 
 bool SimpleRouterNode::operator==(const SimpleRouterNode& other) const
 {
-    return mPos.x() == other.mPos.x() && mPos.y() == other.mPos.y();
+    return mOrigin.x() == other.mOrigin.x() && mOrigin.y() == other.mOrigin.y();
 }
 
 bool SimpleRouterNode::operator!=(const SimpleRouterNode& other) const
 {
-    return mPos.x() != other.mPos.x() || mPos.y() != other.mPos.y();
+    return mOrigin.x() != other.mOrigin.x() || mOrigin.y() != other.mOrigin.y();
 }
 
 SimpleRouterNode& SimpleRouterNode::operator=(const QPointF& other)
 {
-    mPos = other;
+    mOrigin = other;
     return *this;
 }
 
 bool SimpleRouterNode::operator==(const QPointF& other) const
 {
-    return mPos.x() == other.x() && mPos.y() == other.y();
+    return mOrigin.x() == other.x() && mOrigin.y() == other.y();
 }
 
 bool SimpleRouterNode::operator!=(const QPointF& other) const
 {
-    return mPos.x() != other.x() || mPos.y() != other.y();
+    return mOrigin.x() != other.x() || mOrigin.y() != other.y();
 }
 
 SimpleRouterNode& SimpleRouterNode::operator=(const double& other)
@@ -104,7 +132,7 @@ bool SimpleRouterNode::operator>(const SimpleRouterNode& other) const
 
 bool SimpleRouterNode::operator<(const SimpleRouterNode& other) const
 {
-    return mPos.x() != other.mPos.x() || mPos.y() != other.mPos.y();
+    return mScore < other.mScore;
 }
 
 

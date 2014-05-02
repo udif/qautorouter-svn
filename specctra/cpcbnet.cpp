@@ -141,6 +141,8 @@ int CPcbNet::padstacks()
 					CGPadstack* padstack = place->pad(pinRef);
 					if ( padstack != NULL )
 					{
+                        padstack->setPos(place->pad(pinRef)->pos());
+                        padstack->setOrigin(place->pad(pinRef)->origin());
 						mPadstacks.append(padstack);
 					}
 				}

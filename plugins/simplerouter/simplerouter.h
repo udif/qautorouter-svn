@@ -75,6 +75,7 @@ class SimpleRouter : public QObject, public CPluginInterface
         CPcbNet*                    selectNet();
         bool                        endPoints();
         QGraphicsPathItem*          drawRatLine();
+        QGraphicsPathItem*          drawRatLine(QList<SimpleRouterNode> path);
         void                        route();
         QList<SimpleRouterNode>&    path();
         QList<SimpleRouterNode>     neighbours(SimpleRouterNode node);

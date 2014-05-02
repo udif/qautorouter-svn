@@ -188,6 +188,7 @@ void SimpleRouter::stop()
 /// draw a single rat line
 QGraphicsPathItem* SimpleRouter::drawRatLine()
 {
+	QEventLoop loop;
     mRatLine=NULL;
     if ( mNet && mEndPoint[0] && mEndPoint[1] )
     {
@@ -197,8 +198,30 @@ QGraphicsPathItem* SimpleRouter::drawRatLine()
         painterPath.moveTo( pointA );
         painterPath.lineTo( pointB );
         mRatLine = CSpecctraObject::globalScene()->addPath(painterPath);
+        loop.processEvents();
     }
 	return mRatLine;
+}
+
+/// draw a single rat line
+QGraphicsPathItem* SimpleRouter::drawRatLine(QList<SimpleRouterNode> path)
+{
+	QEventLoop loop;
+    QPainterPath painterPath;
+    if ( mRatLine )
+    {
+        delete mRatLine;
+        mRatLine=NULL;
+    }
+    for(int n=0; n < path.count()-1; n++)
+    {
+        SimpleRouterNode nodeA = path.at(n);
+        SimpleRouterNode nodeB = path.at(n+1);
+        painterPath.moveTo( nodeA.origin() );
+        painterPath.lineTo( nodeB.origin() );
+        CSpecctraObject::globalScene()->addPath(painterPath);
+        loop.processEvents();
+    }
 }
 
 /**
@@ -265,6 +288,7 @@ void SimpleRouter::route()
         {
             drawRatLine();
             path();
+            drawRatLine(mPath);
             if ( mRatLine )
             {
                 delete mRatLine;
@@ -281,48 +305,39 @@ void SimpleRouter::route()
 QList<SimpleRouterNode>& SimpleRouter::path()
 {
 	QEventLoop loop;
-	int loopcounter=0;
 	int idx;
-	SimpleRouterNode node(mEndPoint[0]->pad(mEndPoint[0]->layer()->name())->pos(), 0 /* mEndPoint[0]->layer()->index() */ );
+	SimpleRouterNode node(mEndPoint[0]->origin(), 0 /* mEndPoint[0]->layer()->index() */ ); /* FIXME */
+	mPath.clear();
+	mOpenList.clear();
+	mClosedList.clear();
 	insort(mOpenList,node);
-    while(!mOpenList.isEmpty() && mOpenList.at(0) != mEndPoint[1]->pad(mEndPoint[1]->layer()->name())->pos() )
+    while(!mOpenList.isEmpty() && mOpenList.at(0) != mEndPoint[1]->origin() )
 	{
         node = mOpenList.takeFirst();
-		if (++loopcounter >= 10)
-		{
-			loop.processEvents();
-			loopcounter=0;
-		}
+        loop.processEvents();
         QList<SimpleRouterNode> children = neighbours(node);
 		for(int n=0; n < children.count(); n++)
 		{
             SimpleRouterNode child = children[n];
-			// child node already in the open list?
-			int oIdx = mOpenList.indexOf(child);
+			int oIdx = mOpenList.indexOf(child);            // child node already in the open list?
 			if ( oIdx >=0 )
 			{
-				// the existing node is better?
-                SimpleRouterNode other = mOpenList[oIdx];
+                SimpleRouterNode other = mOpenList[oIdx];   // the existing node is better?
 				if ( other <= child )
 					continue;
 			}
-			// child node already in the closed list?
-			int cIdx = mClosedList.indexOf(child);
+			int cIdx = mClosedList.indexOf(child);          // child node already in the closed list?
 			if ( cIdx >= 0 )
 			{
-				// the existing node is better?
-                SimpleRouterNode other = mClosedList[cIdx];
+                SimpleRouterNode other = mClosedList[cIdx]; // the existing node is better?
 				if ( other <= child )
 					continue;
 			}
-			// remove child from open and closed lists
-			if ( oIdx >= 0 )
+			if ( oIdx >= 0 )                                // remove child from open and closed lists
 				mOpenList.takeAt(oIdx);
 			if ( cIdx >= 0 )
 				mClosedList.takeAt(cIdx);
-			// add child to open list
-			open(child);
-
+			open(child);                                    // add child to open list
 		}
 		close(node);
 	}
@@ -355,9 +370,13 @@ QList<SimpleRouterNode> SimpleRouter::neighbours(SimpleRouterNode node)
 	{
 		for(int y=-1; y<=1; y++)
 		{
-			SimpleRouterNode child(QPointF(node.pos().x()+x,node.pos().y()+y));
-            child.setScore( cost( child ) );
-            rc.append(child);
+            if ( x!=0 && y!=0 )
+            {
+                SimpleRouterNode child(QPointF(node.origin().x()+x,node.origin().y()+y));
+                child.setParent(&node);
+                child.setScore( cost( child ) );
+                rc.append(child);
+            }
 		}
 	}
 	return rc;
@@ -449,7 +468,7 @@ double SimpleRouter::g(SimpleRouterNode node)
 	double rc=0.0;
 	while( node.parent() != NULL )
 	{
-		rc += adjacentCost( node.parent()->pos(), node.pos() );
+		rc += adjacentCost( node.parent()->origin(), node.origin() );
 		node = *node.parent();
 	}
 	return rc;
@@ -460,7 +479,7 @@ double SimpleRouter::g(SimpleRouterNode node)
  */
 double SimpleRouter::h(SimpleRouterNode node)
 {
-	double rc = manhattanLength( node.pos(), mEndPoint[1]->pos() ) * 10.0;
+	double rc = manhattanLength( node.origin(), mEndPoint[1]->origin() ) * 10.0;
 	return rc;
 }
 
