@@ -400,6 +400,18 @@ QList<SimpleRouterNode*> SimpleRouter::neighbours(SimpleRouterNode* node)
 }
 
 /**
+ * @brief Retrieve a list of neighbours of the node that do not collide with uncollidable objects.
+ * @param node The nod ein question.
+ * @return A list of the potential move directions.
+ */
+QList<SimpleRouterNode> SimpleRouter::neighbours(SimpleRouter node)
+{
+    QList<SimpleRouterNode>  rc;
+    /** TODO - write code here */
+    return rc;
+}
+
+/**
  * @brief insort a node into a list in sorted by cost method.
  * @param list The list to which to insort.
  * @param node The insorted node.

@@ -88,6 +88,7 @@ class SimpleRouter : public QObject, public CPluginInterface
         double                      g(SimpleRouterNode node);
         double                      h(SimpleRouterNode node);
 
+        QList<SimpleRouterNode>     neighbours(SimpleRouterNode node);
     private:
         void                        insort(QList<SimpleRouterNode*>& list, SimpleRouterNode* node);
 
