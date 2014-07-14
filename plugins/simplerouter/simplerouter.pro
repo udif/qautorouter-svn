@@ -13,9 +13,9 @@ unix {
 	INSTALLS += target
 }
 SOURCES += simplerouter.cpp \
-    simplerouternode.cpp
+    simpleroutergrid.cpp
 HEADERS += simplerouter.h \
-    simplerouternode.h
+    simpleroutergrid.h
 OTHER_FILES += README.txt \
     simplerouter.json
 unix: LIBS += -L../../specctra -lspecctra

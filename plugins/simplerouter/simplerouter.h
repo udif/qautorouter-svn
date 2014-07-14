@@ -22,13 +22,13 @@
 #include <QList>
 #include <QRectF>
 #include <QStack>
-#include <QMap>
+#include <QVector>
 #include <QPoint>
 #include <QPointF>
 #include <QPainterPath>
 #include <QGraphicsPathItem>
 #include <cplugininterface.h>
-#include <simplerouternode.h>
+#include <simpleroutergrid.h>
 
 class CPcb;
 class CPcbNet;
@@ -61,46 +61,84 @@ class SimpleRouter : public QObject, public CPluginInterface
 
 	private:
 
-		typedef enum {
+        typedef enum {
 			Idle,													/** there is nothing happening */
 			Selecting,												/** selecting which net(s) to route */
 			Routing,												/** committing a route */
-		} tRunState;
+        } runState_t;
 
 		CPcb*						pcb() {return mPcb;}
-		tRunState					state();
+        runState_t					state();
 		bool						running() {return state() != Idle;}
-		void						setState(tRunState state);
+        void						setState(runState_t state);
 		QString						currentStatus();				/** a brief status report for the status bar */
         CPcbNet*                    selectNet();
         bool                        endPoints();
         QGraphicsPathItem*          drawRatLine();
-        QGraphicsPathItem*          drawRatLine(QList<SimpleRouterNode> path);
+        void                        drawPath(QPoint a, QPoint b);
+        void                        drawPath();
         void                        route();
-        QList<SimpleRouterNode>&    path();
-        QList<SimpleRouterNode*>    neighbours(SimpleRouterNode* node);
-        void                        open(SimpleRouterNode* node);
-		void                        close(SimpleRouterNode* node);
-		void                        clear(QList<SimpleRouterNode*>& nodes);
-		double                      manhattanLength(QPointF a, QPointF b);
-        double                      adjacentCost(QPointF a, QPointF b);
-        double                      cost(SimpleRouterNode node);
-        double                      g(SimpleRouterNode node);
-        double                      h(SimpleRouterNode node);
 
-        QList<SimpleRouterNode>     neighbours(SimpleRouterNode node);
+        void                        resizeGrid();
+        bool                        endPath(QPoint src, QPoint dst);
+        void                        getPath(QPoint src, QPoint dst);
+        int                         nextNode(QPoint destination, QPoint& next);
+
+        inline bool                 traversed(int x, int y)
+        {
+            return (mGrid.get(x,y)==SimpleRouterGrid::nSeen);
+        }
+
+        inline bool                 blocked(int x, int y)
+        {
+            return (mGrid.get(x,y)==SimpleRouterGrid::nBlocked);
+        }
+
+        inline bool                 traversable(int x, int y)
+        {
+            return (!traversed(x,y) && !blocked(x,y));
+        }
+
+        inline int                  sDistance(QPoint src, QPoint dst)
+        {
+            //add 10 for N,E,S,W (straight)
+            int distance = 10;
+
+            //now add manhattan length
+            distance += abs(src.x() * 10 - dst.x() * 10);
+            distance += abs(src.y() * 10 - dst.y() * 10);
+            return distance;
+        }
+
+        inline int                  dDistance(QPoint src, QPoint dst)
+        {
+            //add 10 for NE,SE,SW,NW (diagonal)
+            int distance = 14;
+
+            //now add manhattan length
+            distance += abs(src.x() * 10 - dst.x() * 10);
+            distance += abs(src.y() * 10 - dst.y() * 10);
+            return distance;
+        }
+
+        int                         CheckN(QPoint& dst, QPoint& outNode);
+        int                         CheckE(QPoint& dst, QPoint& outNode);
+        int                         CheckS(QPoint& dst, QPoint& outNode);
+        int                         CheckW(QPoint& dst, QPoint& outNode);
+        int                         CheckNE(QPoint& dst, QPoint& outNode);
+        int                         CheckSE(QPoint& dst, QPoint& outNode);
+        int                         CheckSW(QPoint& dst, QPoint& outNode);
+        int                         CheckNW(QPoint& dst, QPoint& outNode);
+
     private:
-        void                        insort(QList<SimpleRouterNode*>& list, SimpleRouterNode* node);
-
+        SimpleRouterGrid            mGrid;
+        QVector<QPoint>             mPath;
 		CPcb*						mPcb;
 		QDateTime					mStartTime;
-		tRunState					mState;
+        runState_t					mState;
 		CPcbNet*                    mNet;                           /** the current net */
 		CGPadstack*                 mEndPoint[2];                   /** current route end points */
 		QGraphicsPathItem*          mRatLine;                       /** The current rat line */
-		QList<SimpleRouterNode*>    mOpenList;
-        QList<SimpleRouterNode*>    mClosedList;                    /** closed nodes ordered by cost */
-        QList<SimpleRouterNode>     mPath;                          /** The resulting path */
 };
 
 #endif // SIMPLEROUTER_H

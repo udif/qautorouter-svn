@@ -121,7 +121,7 @@ QString SimpleRouter::elapsed()
 /**
   * @return current state
   */
-SimpleRouter::tRunState SimpleRouter::state()
+SimpleRouter::runState_t SimpleRouter::state()
 {
 	return mState;
 }
@@ -129,7 +129,7 @@ SimpleRouter::tRunState SimpleRouter::state()
 /**
   * @brief set surrent run state
   */
-void SimpleRouter::setState(tRunState state)
+void SimpleRouter::setState(runState_t state)
 {
 	mState=state;
 }
@@ -167,6 +167,7 @@ bool SimpleRouter::start(CPcb* pcb)
 	mStartTime = QDateTime::currentDateTime();
 	if ( mPcb != NULL && mPcb->network() != NULL )
 	{
+        resizeGrid();
 		setState(Selecting);
 		QObject::connect(this,SIGNAL(status(QString)),mPcb,SIGNAL(status(QString)));
 		QObject::connect(this,SIGNAL(clearCache()),mPcb,SLOT(clearCache()));
@@ -204,23 +205,24 @@ QGraphicsPathItem* SimpleRouter::drawRatLine()
 }
 
 /// draw a single rat line
-QGraphicsPathItem* SimpleRouter::drawRatLine(QList<SimpleRouterNode> path)
+void SimpleRouter::drawPath(QPoint ptA, QPoint ptB)
 {
-	QEventLoop loop;
     QPainterPath painterPath;
-    if ( mRatLine )
+    painterPath.moveTo(QPointF(mGrid.translate(ptA)));
+    painterPath.lineTo(QPointF(mGrid.translate(ptB)));
+    //painterPath.moveTo(ptA);
+    //painterPath.lineTo(ptB);
+    CSpecctraObject::globalScene()->addPath(painterPath);
+}
+
+/// draw a single rat line
+void SimpleRouter::drawPath()
+{
+    for(int n=0; n < mPath.count()-1; n++)
     {
-        delete mRatLine;
-        mRatLine=NULL;
-    }
-    for(int n=0; n < path.count()-1; n++)
-    {
-        SimpleRouterNode nodeA = path.at(n);
-        SimpleRouterNode nodeB = path.at(n+1);
-        painterPath.moveTo( nodeA.origin() );
-        painterPath.lineTo( nodeB.origin() );
-        CSpecctraObject::globalScene()->addPath(painterPath);
-        loop.processEvents();
+        QPoint ptA = mPath.at(n);
+        QPoint ptB = mPath.at(n+1);
+        drawPath(ptA,ptB);
     }
 }
 
@@ -286,246 +288,226 @@ void SimpleRouter::route()
         mNet->sort();
         if ( endPoints() )
         {
-            drawRatLine();
-            path();
-            drawRatLine(mPath);
-            if ( mRatLine )
+            QPoint src = mGrid.translate(mEndPoint[0]->origin());
+            QPoint dst = mGrid.translate(mEndPoint[1]->origin());
+
+            drawPath(src,dst);
+            getPath(src,dst);
+            drawPath();
+
+            if ( mPath.count() > 1 )
             {
-                delete mRatLine;
-                mRatLine=NULL;
+                mEndPoint[0]->setRouted(true);
+                mEndPoint[1]->setRouted(true);
             }
-            mEndPoint[0]=mEndPoint[1]=NULL;
         }
     }
 }
 
 /**
- * @brief route a segment of this net.
+ * @brief Resize the routing grid to fit the currebt PCB, and fill with
+ * nOpen node states.
  */
-QList<SimpleRouterNode>& SimpleRouter::path()
+void SimpleRouter::resizeGrid()
 {
-	QEventLoop loop;
-	int idx;
-	SimpleRouterNode* node = new SimpleRouterNode(mEndPoint[0]->origin(), 0 /* mEndPoint[0]->layer()->index() */ ); /* FIXME */
-	mPath.clear();
-	clear(mOpenList);
-	clear(mClosedList);
-	insort(mOpenList,node);
-    while(!mOpenList.isEmpty() && mOpenList.at(0)->origin() != mEndPoint[1]->origin() )
-	{
-        node = mOpenList.takeFirst();
-        loop.processEvents();
-        QList<SimpleRouterNode*> children = neighbours(node);
-		for(int n=0; n < children.count(); n++)
-		{
-            SimpleRouterNode* child = children[n];
-			int oIdx = mOpenList.indexOf(child);            // child node already in the open list?
-			if ( oIdx >=0 )
-			{
-                SimpleRouterNode other = mOpenList[oIdx];   // the existing node is better?
-				if ( other <= child )
-					continue;
-			}
-			int cIdx = mClosedList.indexOf(child);          // child node already in the closed list?
-			if ( cIdx >= 0 )
-			{
-                SimpleRouterNode other = mClosedList[cIdx]; // the existing node is better?
-				if ( other <= child )
-					continue;
-			}
-			if ( oIdx >= 0 )                                // remove child from open and closed lists
-			{
-				delete mOpenList.takeAt(oIdx);
-            }
-			if ( cIdx >= 0 )
-			{
-				delete mClosedList.takeAt(cIdx);
-            }
-			open(child);                                    // add child to open list
-		}
-		close(node);
-	}
-	do
-	{
-		mPath.append(*node);
-		if ( ( idx = mClosedList.indexOf( other ) ) >= 0 )
-			other = mClosedList.takeAt(idx);
-		else
-		if ( ( idx = mOpenList.indexOf( other ) ) >= 0 )
-			other = mOpenList.takeAt(idx);
-		else
-			break;
-        node = node->parent();
-	} while( node->parent() != NULL );
-	
-    // FIXME FIXME was: follow parent nodes from goal back to start
-	do
-	{
-        SimpleRouterNode other(node->parent());
-		mPath.append(node);
-		if ( ( idx = mClosedList.indexOf( other ) ) >= 0 )
-			other = mClosedList.takeAt(idx);
-		else
-		if ( ( idx = mOpenList.indexOf( other ) ) >= 0 )
-			other = mOpenList.takeAt(idx);
-		else
-			break;
-		node = other;
-	} while( node.parent() != NULL );
-	return mPath;
+    QPoint topLeft;
+    QPoint bottomRight;
+
+    /* Extract PCB boundaries from specctra object in order to size the grid */
+    topLeft.setX(mPcb->structure()->boundary()->boundingRect().topLeft().x());
+    topLeft.setY(mPcb->structure()->boundary()->boundingRect().topLeft().y());
+    bottomRight.setX(mPcb->structure()->boundary()->boundingRect().bottomRight().x());
+    bottomRight.setY(mPcb->structure()->boundary()->boundingRect().bottomRight().y());
+
+    /* Apply the grid offset to account for negative offsets in specctra coordinates */
+    int translationX = topLeft.x()<0 ? abs(topLeft.x()) : -topLeft.x();
+    int translationY = topLeft.y()<0 ? abs(topLeft.y()) : -topLeft.y();
+    //int translationX = topLeft.x();
+    //int translationY = topLeft.y();
+    mGrid.resize(QSize(bottomRight.x()-topLeft.x(),bottomRight.y()-topLeft.y()));
+    mGrid.setTranslation(QPoint(translationX,translationY));
+    mGrid.fill(SimpleRouterGrid::nOpen);
 }
 
-/**
- * @brief Retrieve a list of neighbours of the node that do not collide with uncollidable objects.
- * @param node The nod ein question.
- * @return A list of the potential move directions.
- */
-QList<SimpleRouterNode*> SimpleRouter::neighbours(SimpleRouterNode* node)
+bool SimpleRouter::endPath(QPoint src, QPoint dst)
 {
-	QList<SimpleRouterNode> rc;
-	for(int x=-1; x<=1; x++)
-	{
-		for(int y=-1; y<=1; y++)
-		{
-            if ( x!=0 && y!=0 )
-            {
-                SimpleRouterNode child(QPointF(node.origin().x()+x,node.origin().y()+y));
-                child.setParent(&node);
-                child.setScore( cost( child ) );
-                rc.append(child);
-            }
-		}
-	}
-	return rc;
-}
-
-/**
- * @brief Retrieve a list of neighbours of the node that do not collide with uncollidable objects.
- * @param node The nod ein question.
- * @return A list of the potential move directions.
- */
-QList<SimpleRouterNode> SimpleRouter::neighbours(SimpleRouter node)
-{
-    QList<SimpleRouterNode>  rc;
-    /** TODO - write code here */
-    return rc;
-}
-
-/**
- * @brief insort a node into a list in sorted by cost method.
- * @param list The list to which to insort.
- * @param node The insorted node.
- */
-void SimpleRouter::insort(QList<SimpleRouterNode*>& list, SimpleRouterNode* node)
-{
-	int idx = list.indexOf(node);
-	if ( idx < 0 ) // insorted already?
-	{
-		for(int n=0; n < list.length(); n++)
-		{
-			SimpleRouterNode other = list[n];
-			if ( node < other )
-			{
-				list.insert(n,node);
-				return;
-			}
-		}
-		list.append(node);
-	}
-
-}
-
-/**
- * @brief Make a copy of the node into the open list
- * @param node The source node to copy from 
- */
-void SimpleRouter::open(SimpleRouterNode* node)
-{
-	insort(mOpenList,node);
-}
-
-/**
- * @brief Make a copy of the node into the open list
- * @param node The source node to copy from 
- */
-void SimpleRouter::close(SimpleRouterNode* node)
-{
-	insort(mClosedList,node);
-}
-
-/**
- * @brief Clear a list of node points. Deleting each node.
- * @param nodes A list of node pointers.
- */
-void SimpleRouter::clear(QList<SimpleRouterNode*>& nodes)
-{
-    while(nodes.count())
+    if ( src.x() == dst.x()-1 || src.x() == dst.x()+1 || src.x() == dst.x() )
     {
-        SimpleRouterNode* node = nodes.takeLast();
-        delete node;
+        if ( src.y() == dst.y()-1 || src.y() == dst.y()+1 || src.y() == dst.y() )
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void SimpleRouter::getPath(QPoint src, QPoint dst)
+{
+    QPoint next;
+    //push source
+    mPath.clear();
+    mPath.push_back(src);
+    mGrid.set(src.x(),src.y(),SimpleRouterGrid::nSeen);
+
+    while( !endPath(mPath.back(),dst) )
+    {
+        //printf( "%d,%d %d,%d\n", mPath.back().x(), mPath.back().y(), dst.x(), dst.y() );
+        if ( nextNode(dst,next) >= 0 )
+        {
+            mPath.push_back(next);
+            mGrid.set(mPath.back().x(),mPath.back().y(),SimpleRouterGrid::nSeen);
+        }
+        else
+        {
+            mPath.clear();
+            mPath.push_back(src);
+        }
     }
 }
 
-/**
- * @brief Calculate the sum of the absolute values of x() and y(), traditionally known as the "Manhattan length"
- *        of the vector from the point A to point B.
- */
-double SimpleRouter::manhattanLength(QPointF a, QPointF b)
+int SimpleRouter::nextNode(QPoint dst, QPoint& next)
 {
-	QPointF delta = (b - a);
-	return delta.manhattanLength();
+    /**
+     * get the distance + manhattan length of all adjacent nodes and then return the one with the shortest distance.
+     */
+    int smallest = -1;
+    QPoint temp;
+    int result;
+
+    for(int n=0; n < 8; n++)
+    {
+        result = -1;
+        switch(n)
+        {
+            case 0:     result = CheckN(dst, temp);     break;
+            case 1:     result = CheckE(dst, temp);     break;
+            case 2:     result = CheckS(dst, temp);     break;
+            case 3:     result = CheckW(dst, temp);     break;
+            case 4:     result = CheckNE(dst, temp);    break;
+            case 5:     result = CheckSE(dst, temp);    break;
+            case 6:     result = CheckSW(dst, temp);    break;
+            case 7:     result = CheckNW(dst, temp);    break;
+        }
+        if(result >= 0 && (smallest == -1 || result < smallest))
+        {
+            smallest = result;
+            next = temp;
+        }
+    }
+    return smallest;
 }
 
-/** 
- * @brief Calculate the cost between two adjacent points.
- *        We will assign a cost of 10 to each horizontal or vertical square moved, and a cost of 14.14 for a diagonal move.
- *        We use these numbers because the actual distance to move diagonally is the square root of 2,
- *        or roughly 1.414 times the cost of moving horizontally or vertically.
- */
-double SimpleRouter::adjacentCost(QPointF a, QPointF b)
+int SimpleRouter::CheckN(QPoint& dst, QPoint &outNode)
 {
-	double diffX = fabs(a.x()-b.x());
-	double diffY = fabs(a.y()-b.y());
-	double rc = ( diffX && diffY ) ? 14.14 : 10.0;
-	return rc;
+    if ( mPath.back().y() > 0 )
+    {
+        if ( traversable(mPath.back().x(), mPath.back().y() - 1) )
+        {
+            outNode.setX( mPath.back().x() );
+            outNode.setY( mPath.back().y() - 1 );
+            return sDistance(outNode,dst);
+        }
+    }
+    return -1;
 }
 
-/**
- * @brief Calculate the cost of this node
- * @param node
- * @param parent
- */
-double SimpleRouter::cost(SimpleRouterNode node)
+int SimpleRouter::CheckE(QPoint& dst, QPoint &outNode)
 {
-	double rc = g(node) + h(node);
-	return rc;
+    if ( mPath.back().x() < mGrid.width()-1 )
+    {
+        if ( traversable(mPath.back().x() + 1, mPath.back().y()) )
+        {
+            outNode.setX(mPath.back().x() + 1);
+            outNode.setY(mPath.back().y());
+            return sDistance(outNode,dst);
+        }
+    }
+    return -1;
 }
 
-/** 
- * @brief Calculate G, the movement cost to move from the starting point A
- *         to this cell of the grid, following the path generated to get there.
- */
-double SimpleRouter::g(SimpleRouterNode node)
+int SimpleRouter::CheckS(QPoint& dst, QPoint &outNode)
 {
-	double rc=0.0;
-	SimpleRouterNode* parent = node.parent();
-	while( parent != NULL && parent != parent->parent() )
-	{
-		rc += adjacentCost( parent->origin(), node.origin() );
-		parent = parent->parent();
-	}
-	return rc;
+    if ( mPath.back().y() < mGrid.height()-1 )
+    {
+        if ( traversable(mPath.back().x(), mPath.back().y() + 1) )
+        {
+            outNode.setX( mPath.back().x() );
+            outNode.setY( mPath.back().y() + 1 );
+            return sDistance(outNode,dst);
+        }
+    }
+    return -1;
 }
 
-/**
- * @brief The estimated movement cost to move from that given square on the grid to the final destination
- */
-double SimpleRouter::h(SimpleRouterNode node)
+int SimpleRouter::CheckW(QPoint& dst, QPoint &outNode)
 {
-	double rc = manhattanLength( node.origin(), mEndPoint[1]->origin() ) * 10.0;
-	return rc;
+    if(mPath.back().x() > 0)
+    {
+        if ( traversable(mPath.back().x() - 1, mPath.back().y()) )
+        {
+            outNode.setX(mPath.back().x() - 1);
+            outNode.setY(mPath.back().y());
+            return sDistance(outNode,dst);
+        }
+    }
+    return -1;
 }
 
+int SimpleRouter::CheckNE(QPoint& dst, QPoint &outNode)
+{
+    if ( mPath.back().x() < mGrid.width()-1 && mPath.back().y() > 0 )
+    {
+        if ( traversable(mPath.back().x() + 1, mPath.back().y() - 1) )
+        {
+            outNode.setX( mPath.back().x() + 1 );
+            outNode.setY( mPath.back().y() - 1 );
+            return dDistance(outNode,dst);
+        }
+    }
+    return -1;
+}
+
+int SimpleRouter::CheckSE(QPoint& dst, QPoint &outNode)
+{
+    if ( mPath.back().x() < mGrid.width()-1 && mPath.back().y() < mGrid.height()-1 )
+    {
+        if ( traversable(mPath.back().x() + 1, mPath.back().y() + 1) )
+        {
+            outNode.setX( mPath.back().x() + 1 );
+            outNode.setY( mPath.back().y() + 1 );
+            return dDistance(outNode,dst);
+        }
+    }
+    return -1;
+}
+
+int SimpleRouter::CheckNW(QPoint& dst, QPoint &outNode)
+{
+    if ( mPath.back().x() > 0 && mPath.back().y() > 0)
+    {
+        if ( traversable(mPath.back().x() - 1, mPath.back().y() - 1) )
+        {
+            outNode.setX( mPath.back().x() - 1 );
+            outNode.setY( mPath.back().y() - 1 );
+            return dDistance(outNode,dst);
+        }
+    }
+    return -1;
+}
+
+int SimpleRouter::CheckSW(QPoint& dst, QPoint &outNode)
+{
+    if ( mPath.back().x() > 0 && mPath.back().y() < mGrid.height()-1 )
+    {
+        if ( traversable(mPath.back().x() - 1, mPath.back().y() + 1) )
+        {
+            outNode.setX( mPath.back().x() - 1 );
+            outNode.setY( mPath.back().y() + 1 );
+            return dDistance(outNode,dst);
+        }
+    }
+    return -1;
+}
 
 /**
   * @brief Run for a little bit.
@@ -533,7 +515,9 @@ double SimpleRouter::h(SimpleRouterNode node)
 bool SimpleRouter::exec()
 {
 	bool rc=true;
+    QEventLoop loop;
 	emit status(currentStatus());
+    loop.processEvents();
 	switch(state())
 	{
 		default:
