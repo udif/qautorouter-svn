@@ -99,26 +99,22 @@ class SimpleRouter : public QObject, public CPluginInterface
             return (!traversed(x,y) && !blocked(x,y));
         }
 
-        inline int                  sDistance(QPoint src, QPoint dst)
+        inline int                  manhattanLength(QPoint& src, QPoint& dst)
         {
-            //add 10 for N,E,S,W (straight)
-            int distance = 10;
-
-            //now add manhattan length
-            distance += abs(src.x() * 10 - dst.x() * 10);
-            distance += abs(src.y() * 10 - dst.y() * 10);
-            return distance;
+            // manhattan length
+            return (abs(src.x() * 10 - dst.x() * 10)) + (abs(src.y() * 10 - dst.y() * 10));
         }
 
-        inline int                  dDistance(QPoint src, QPoint dst)
+        inline int                  sDistance(QPoint& src, QPoint& dst)
         {
-            //add 10 for NE,SE,SW,NW (diagonal)
-            int distance = 14;
+            // add 10 for N,E,S,W (straight)
+            return 10 + manhattanLength(src,dst);
+        }
 
-            //now add manhattan length
-            distance += abs(src.x() * 10 - dst.x() * 10);
-            distance += abs(src.y() * 10 - dst.y() * 10);
-            return distance;
+        inline int                  dDistance(QPoint& src, QPoint& dst)
+        {
+            // add 10 for NE,SE,SW,NW (diagonal)
+            return  14 + manhattanLength(src,dst);
         }
 
         int                         CheckN(QPoint& dst, QPoint& outNode);

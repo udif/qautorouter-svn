@@ -93,10 +93,19 @@ int SimpleRouterGrid::indexOf(int x, int y)
 
 QPoint SimpleRouterGrid::translate(QPoint pt)
 {
-    QPoint rc;
-    rc.setX( pt.x() + mTranslation.x() );
-    rc.setY( pt.y() + mTranslation.y() );
-    return rc;
+    #if 1
+        QPoint rc;
+        rc.setX( pt.x() + mTranslation.x() );
+        rc.setY( pt.y() + mTranslation.y() );
+        rc.setX( ( width() - rc.x() ) -1 );
+        rc.setY( ( height() - rc.y() ) -1 );
+        return rc;
+    #else
+        QPoint rc;
+        rc.setX( pt.x() + mTranslation.x() );
+        rc.setY( pt.y() + mTranslation.y() );
+        return rc;
+    #endif
 }
 
 

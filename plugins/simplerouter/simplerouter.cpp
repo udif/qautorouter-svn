@@ -210,8 +210,6 @@ void SimpleRouter::drawPath(QPoint ptA, QPoint ptB)
     QPainterPath painterPath;
     painterPath.moveTo(QPointF(mGrid.translate(ptA)));
     painterPath.lineTo(QPointF(mGrid.translate(ptB)));
-    //painterPath.moveTo(ptA);
-    //painterPath.lineTo(ptB);
     CSpecctraObject::globalScene()->addPath(painterPath);
 }
 
@@ -322,8 +320,6 @@ void SimpleRouter::resizeGrid()
     /* Apply the grid offset to account for negative offsets in specctra coordinates */
     int translationX = topLeft.x()<0 ? abs(topLeft.x()) : -topLeft.x();
     int translationY = topLeft.y()<0 ? abs(topLeft.y()) : -topLeft.y();
-    //int translationX = topLeft.x();
-    //int translationY = topLeft.y();
     mGrid.resize(QSize(bottomRight.x()-topLeft.x(),bottomRight.y()-topLeft.y()));
     mGrid.setTranslation(QPoint(translationX,translationY));
     mGrid.fill(SimpleRouterGrid::nOpen);
